@@ -1,5 +1,5 @@
 import Link from "next/link";
-import HoneyJarIllustration from "./HoneyJarIllustration";
+import Image from "next/image";
 
 export default function Hero() {
   return (
@@ -26,7 +26,14 @@ export default function Hero() {
           </div>
         </div>
         <div className="order-1 flex justify-center lg:order-2">
-          <HoneyJarIllustration className="w-64 sm:w-80 lg:w-96" />
+          <Image
+            src="/producto-miel.png"
+            alt="Frasco de miel artesanal Melera"
+            width={433}
+            height={577}
+            priority
+            className="h-auto w-64 sm:w-80 lg:w-96"
+          />
         </div>
       </div>
     </section>

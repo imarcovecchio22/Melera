@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import HoneyJarIllustration from "@/components/HoneyJarIllustration";
+import Image from "next/image";
 import QuantitySelector from "@/components/QuantitySelector";
 import { getMainProduct } from "@/lib/product";
 import { formatPrecio } from "@/lib/utils";
@@ -16,7 +16,14 @@ export default async function ProductoPage() {
       <main className="flex-1 container-melera py-12 sm:py-16">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="flex justify-center rounded-3xl bg-miel-50 p-10">
-            <HoneyJarIllustration className="w-64 sm:w-80" />
+            <Image
+              src="/producto-miel.png"
+              alt="Frasco de miel artesanal Melera"
+              width={433}
+              height={577}
+              priority
+              className="h-auto w-64 sm:w-80"
+            />
           </div>
           <div>
             <h1 className="font-serif text-3xl font-semibold text-marron sm:text-4xl">

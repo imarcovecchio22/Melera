@@ -1,5 +1,5 @@
 import Link from "next/link";
-import HoneyJarIllustration from "./HoneyJarIllustration";
+import Image from "next/image";
 import { formatPrecio } from "@/lib/utils";
 import type { Product } from "@prisma/client";
 
@@ -10,7 +10,13 @@ export default function ProductoSection({ product }: { product: Product }) {
     <section id="producto" className="bg-miel-50 py-16 sm:py-24">
       <div className="container-melera grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <div className="flex justify-center rounded-3xl bg-white p-10 shadow-soft">
-          <HoneyJarIllustration className="w-56 sm:w-72" />
+          <Image
+            src="/producto-miel.png"
+            alt="Frasco de miel artesanal Melera"
+            width={433}
+            height={577}
+            className="h-auto w-56 sm:w-72"
+          />
         </div>
         <div>
           <span className="text-sm font-semibold uppercase tracking-wide text-miel-600">

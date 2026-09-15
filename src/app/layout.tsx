@@ -24,10 +24,37 @@ const caveat = Caveat({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://melera.vercel.app";
+const SITE_TITLE = "Melera | Miel Artesanal";
+const SITE_DESCRIPTION =
+  "Miel pura de abejas, producida por Apícola Mercedes en Tomás Jofré, Buenos Aires. Directo del campo a tu mesa.";
+
 export const metadata: Metadata = {
-  title: "Melera | Miel Artesanal",
-  description:
-    "Miel pura de abejas, producida por Apícola Mercedes en Tomás Jofré, Buenos Aires. Directo del campo a tu mesa.",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: "/",
+    siteName: "Melera",
+    locale: "es_AR",
+    type: "website",
+    images: [
+      {
+        url: "/producto-miel.png",
+        width: 433,
+        height: 577,
+        alt: "Frasco de miel artesanal Melera",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/producto-miel.png"],
+  },
 };
 
 export default function RootLayout({
