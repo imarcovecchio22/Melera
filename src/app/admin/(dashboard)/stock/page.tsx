@@ -8,7 +8,7 @@ export default async function AdminStockPage() {
 
   return (
     <div className="max-w-xl">
-      <h1 className="font-serif text-2xl font-semibold text-stone-800">Stock</h1>
+      <h1 className="font-serif text-2xl font-semibold text-marron">Stock</h1>
       <p className="mt-1 text-sm text-stone-500">
         Gestioná las unidades disponibles del producto.
       </p>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins, Fraunces } from "next/font/google";
+import { Poppins, Fraunces, Caveat } from "next/font/google";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -12,7 +12,15 @@ const poppins = Poppins({
 const fraunces = Fraunces({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
   variable: "--font-fraunces",
+  display: "swap",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-caveat",
   display: "swap",
 });
 
@@ -29,7 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={`${poppins.variable} ${fraunces.variable} font-sans`}>
+      <body className={`${poppins.variable} ${fraunces.variable} ${caveat.variable} font-sans`}>
         {children}
       </body>
     </html>

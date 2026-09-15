@@ -37,7 +37,7 @@ export default function StockEditor({ product }: { product: Product }) {
 
   return (
     <form onSubmit={handleSubmit} className="rounded-xl border border-miel-100 bg-white p-6 shadow-soft">
-      <h2 className="font-semibold text-stone-800">{product.nombre}</h2>
+      <h2 className="font-semibold text-marron">{product.nombre}</h2>
       <p className="mt-1 text-sm text-stone-500">Stock disponible</p>
 
       <div className="mt-4 flex items-end gap-3">

@@ -20,7 +20,7 @@ export default async function CheckoutPage({
     <>
       <Header />
       <main className="container-melera py-12 sm:py-16">
-        <h1 className="mb-8 font-serif text-3xl font-semibold text-stone-800 sm:text-4xl">
+        <h1 className="mb-8 font-serif text-3xl font-semibold text-marron sm:text-4xl">
           Finalizar compra
         </h1>
         <CheckoutForm

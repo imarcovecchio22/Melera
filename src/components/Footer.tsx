@@ -4,11 +4,11 @@ export default function Footer() {
   const numero = process.env.WHATSAPP_NUMBER ?? "";
 
   return (
-    <footer className="border-t border-miel-100 bg-white">
+    <footer className="bg-miel-700">
       <div className="container-melera flex flex-col items-center gap-4 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
         <div>
-          <p className="font-serif text-xl font-semibold text-miel-700">Melera</p>
-          <p className="mt-1 text-sm text-stone-500">
+          <p className="font-serif text-xl font-semibold text-crema">Melera</p>
+          <p className="mt-1 text-sm text-miel-100">
             Miel artesanal de Tomás Jofré, Buenos Aires.
           </p>
         </div>
@@ -24,7 +24,7 @@ export default function Footer() {
           </a>
         )}
       </div>
-      <div className="border-t border-miel-100 py-4 text-center text-xs text-stone-400">
+      <div className="border-t border-miel-800 py-4 text-center text-xs text-miel-200">
         © {new Date().getFullYear()} Melera. Todos los derechos reservados.
       </div>
     </footer>

@@ -77,7 +77,7 @@ export default function CheckoutForm({ producto, cantidadInicial }: Props) {
     <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-3 lg:gap-12">
       <div className="space-y-6 lg:col-span-2">
         <fieldset className="space-y-4">
-          <legend className="mb-1 font-serif text-xl font-semibold text-stone-800">
+          <legend className="mb-1 font-serif text-xl font-semibold text-marron">
             Tus datos
           </legend>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -101,7 +101,7 @@ export default function CheckoutForm({ producto, cantidadInicial }: Props) {
         </fieldset>
 
         <fieldset className="space-y-4">
-          <legend className="mb-1 font-serif text-xl font-semibold text-stone-800">
+          <legend className="mb-1 font-serif text-xl font-semibold text-marron">
             Dirección de entrega
           </legend>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -141,7 +141,7 @@ export default function CheckoutForm({ producto, cantidadInicial }: Props) {
       </div>
 
       <div className="h-fit rounded-2xl border border-miel-100 bg-white p-6 shadow-soft">
-        <h2 className="font-serif text-xl font-semibold text-stone-800">Resumen</h2>
+        <h2 className="font-serif text-xl font-semibold text-marron">Resumen</h2>
         <div className="mt-4 flex items-center justify-between text-sm text-stone-600">
           <span>{producto.nombre}</span>
           <div className="flex items-center gap-2">
@@ -165,7 +165,7 @@ export default function CheckoutForm({ producto, cantidadInicial }: Props) {
             </button>
           </div>
         </div>
-        <div className="mt-4 flex items-center justify-between border-t border-miel-100 pt-4 font-semibold text-stone-800">
+        <div className="mt-4 flex items-center justify-between border-t border-miel-100 pt-4 font-semibold text-marron">
           <span>Total</span>
           <span>{formatPrecio(total)}</span>
         </div>

@@ -11,7 +11,7 @@ export default async function AdminPedidosPage() {
 
   return (
     <div>
-      <h1 className="font-serif text-2xl font-semibold text-stone-800">Pedidos</h1>
+      <h1 className="font-serif text-2xl font-semibold text-marron">Pedidos</h1>
       <p className="mt-1 text-sm text-stone-500">{pedidos.length} pedidos en total</p>
 
       <div className="mt-6 overflow-x-auto rounded-xl border border-miel-100 bg-white shadow-soft">

@@ -19,7 +19,7 @@ export default async function ProductoPage() {
             <HoneyJarIllustration className="w-64 sm:w-80" />
           </div>
           <div>
-            <h1 className="font-serif text-3xl font-semibold text-stone-800 sm:text-4xl">
+            <h1 className="font-serif text-3xl font-semibold text-marron sm:text-4xl">
               {product.nombre}
             </h1>
             <p className="mt-4 leading-relaxed text-stone-600">

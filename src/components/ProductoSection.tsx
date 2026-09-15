@@ -16,7 +16,7 @@ export default function ProductoSection({ product }: { product: Product }) {
           <span className="text-sm font-semibold uppercase tracking-wide text-miel-600">
             Nuestro producto
           </span>
-          <h2 className="mt-2 font-serif text-3xl font-semibold text-stone-800 sm:text-4xl">
+          <h2 className="mt-2 font-serif text-3xl font-semibold text-marron sm:text-4xl">
             {product.nombre}
           </h2>
           <p className="mt-4 text-stone-600">{product.descripcion}</p>

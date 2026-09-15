@@ -9,7 +9,7 @@ export default function Hero() {
           <span className="inline-block rounded-full bg-miel-100 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-miel-700">
             Directo del campo a tu mesa
           </span>
-          <h1 className="mt-4 font-serif text-4xl font-semibold leading-tight text-stone-800 sm:text-5xl">
+          <h1 className="mt-4 font-caveat text-6xl font-bold leading-tight text-marron sm:text-7xl">
             Miel artesanal, pura y natural
           </h1>
           <p className="mx-auto mt-4 max-w-md text-lg text-stone-600 lg:mx-0">

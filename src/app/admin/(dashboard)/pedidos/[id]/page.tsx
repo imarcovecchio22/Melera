@@ -25,7 +25,7 @@ export default async function AdminPedidoDetallePage({
       </Link>
 
       <div className="mt-4 flex items-center justify-between">
-        <h1 className="font-serif text-2xl font-semibold text-stone-800">
+        <h1 className="font-serif text-2xl font-semibold text-marron">
           Pedido #{pedido.numero}
         </h1>
         <div className="w-48">
@@ -36,7 +36,7 @@ export default async function AdminPedidoDetallePage({
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2">
         <div className="rounded-xl border border-miel-100 bg-white p-6 shadow-soft">
-          <h2 className="font-semibold text-stone-800">Cliente</h2>
+          <h2 className="font-semibold text-marron">Cliente</h2>
           <dl className="mt-3 space-y-1 text-sm text-stone-600">
             <div className="flex justify-between">
               <dt>Nombre</dt>
@@ -54,7 +54,7 @@ export default async function AdminPedidoDetallePage({
         </div>
 
         <div className="rounded-xl border border-miel-100 bg-white p-6 shadow-soft">
-          <h2 className="font-semibold text-stone-800">Dirección de entrega</h2>
+          <h2 className="font-semibold text-marron">Dirección de entrega</h2>
           <p className="mt-3 text-sm text-stone-600">
             {pedido.calle} {pedido.numero_dir}
             {pedido.pisoDepto ? `, ${pedido.pisoDepto}` : ""}
@@ -66,10 +66,10 @@ export default async function AdminPedidoDetallePage({
         </div>
 
         <div className="rounded-xl border border-miel-100 bg-white p-6 shadow-soft sm:col-span-2">
-          <h2 className="font-semibold text-stone-800">Detalle del pedido</h2>
+          <h2 className="font-semibold text-marron">Detalle del pedido</h2>
           <div className="mt-3 flex items-center justify-between text-sm text-stone-600">
             <span>{pedido.product.nombre} × {pedido.cantidad}</span>
-            <span className="font-semibold text-stone-800">{formatPrecio(pedido.total)}</span>
+            <span className="font-semibold text-marron">{formatPrecio(pedido.total)}</span>
           </div>
           {pedido.mpPaymentId && (
             <p className="mt-3 text-xs text-stone-400">

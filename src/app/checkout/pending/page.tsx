@@ -23,7 +23,7 @@ export default async function CheckoutPendingPage({
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-3xl text-amber-600">
           ⏳
         </div>
-        <h1 className="mt-6 font-serif text-3xl font-semibold text-stone-800 sm:text-4xl">
+        <h1 className="mt-6 font-serif text-3xl font-semibold text-marron sm:text-4xl">
           Tu pago está pendiente
         </h1>
         <p className="mt-3 max-w-md text-stone-600">

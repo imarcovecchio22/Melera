@@ -46,7 +46,7 @@ function LoginForm() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-soft"
       >
-        <h1 className="font-serif text-2xl font-semibold text-stone-800">
+        <h1 className="font-serif text-2xl font-semibold text-marron">
           Panel Melera
         </h1>
         <p className="mt-1 text-sm text-stone-500">Ingresá para gestionar la tienda.</p>

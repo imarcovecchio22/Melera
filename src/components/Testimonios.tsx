@@ -16,7 +16,7 @@ const testimonios = [
 
 export default function Testimonios() {
   return (
-    <section className="bg-white py-16 sm:py-24">
+    <section className="bg-beige py-16 sm:py-24">
       <div className="container-melera">
         <div className="text-center">
           <span className="text-sm font-semibold uppercase tracking-wide text-miel-600">
@@ -31,7 +31,7 @@ export default function Testimonios() {
               className="rounded-2xl border border-miel-100 bg-crema p-6 text-stone-600"
             >
               <p className="italic">&ldquo;{t.texto}&rdquo;</p>
-              <footer className="mt-4 text-sm font-semibold text-stone-800">
+              <footer className="mt-4 text-sm font-semibold text-marron">
                 — {t.nombre}
               </footer>
             </blockquote>

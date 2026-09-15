@@ -31,7 +31,7 @@ export default async function CheckoutSuccessPage({
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-600">
           ✓
         </div>
-        <h1 className="mt-6 font-serif text-3xl font-semibold text-stone-800 sm:text-4xl">
+        <h1 className="mt-6 font-serif text-3xl font-semibold text-marron sm:text-4xl">
           ¡Gracias por tu compra!
         </h1>
         <p className="mt-3 max-w-md text-stone-600">
@@ -42,10 +42,10 @@ export default async function CheckoutSuccessPage({
         {order && (
           <div className="mt-8 w-full max-w-sm rounded-2xl border border-miel-100 bg-white p-6 text-left shadow-soft">
             <p className="text-sm text-stone-500">Pedido</p>
-            <p className="font-semibold text-stone-800">#{order.numero}</p>
+            <p className="font-semibold text-marron">#{order.numero}</p>
             <div className="mt-3 flex items-center justify-between text-sm">
               <span className="text-stone-500">Total</span>
-              <span className="font-semibold text-stone-800">
+              <span className="font-semibold text-marron">
                 {formatPrecio(order.total)}
               </span>
             </div>
