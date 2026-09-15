@@ -37,7 +37,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={`${poppins.variable} ${fraunces.variable} ${caveat.variable} font-sans`}>
+      <body
+        className={`${poppins.variable} ${fraunces.variable} ${caveat.variable} flex min-h-screen flex-col font-sans`}
+      >
         {children}
       </body>
     </html>

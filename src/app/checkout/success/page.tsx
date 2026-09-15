@@ -27,7 +27,7 @@ export default async function CheckoutSuccessPage({
   return (
     <>
       <Header />
-      <main className="container-melera flex flex-col items-center py-20 text-center">
+      <main className="flex-1 container-melera flex flex-col items-center py-20 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-600">
           ✓
         </div>

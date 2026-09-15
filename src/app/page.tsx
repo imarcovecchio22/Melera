@@ -14,7 +14,7 @@ export default async function HomePage() {
   return (
     <>
       <Header />
-      <main>
+      <main className="flex-1">
         <Hero />
         <QuienesSomos />
         <ProductoSection product={product} />
