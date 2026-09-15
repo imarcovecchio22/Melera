@@ -1,0 +1,21 @@
+import { getMainProduct } from "@/lib/product";
+import StockEditor from "@/components/admin/StockEditor";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminStockPage() {
+  const product = await getMainProduct();
+
+  return (
+    <div className="max-w-xl">
+      <h1 className="font-serif text-2xl font-semibold text-stone-800">Stock</h1>
+      <p className="mt-1 text-sm text-stone-500">
+        Gestioná las unidades disponibles del producto.
+      </p>
+
+      <div className="mt-6">
+        <StockEditor product={product} />
+      </div>
+    </div>
+  );
+}

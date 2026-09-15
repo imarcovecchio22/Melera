@@ -1,0 +1,106 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getPreferenceClient } from "@/lib/mercadopago";
+import { checkoutSchema } from "@/lib/validation";
+import { getMainProduct } from "@/lib/product";
+
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => null);
+  if (!body) {
+    return NextResponse.json({ error: "Body inválido" }, { status: 400 });
+  }
+
+  const parsed = checkoutSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Datos inválidos", detalles: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const data = parsed.data;
+  const product = await getMainProduct();
+
+  if (data.cantidad > product.stock) {
+    return NextResponse.json(
+      { error: "No hay stock suficiente para esa cantidad" },
+      { status: 400 }
+    );
+  }
+
+  const total = product.precio * data.cantidad;
+
+  const order = await prisma.order.create({
+    data: {
+      nombre: data.nombre,
+      apellido: data.apellido,
+      email: data.email,
+      telefono: data.telefono,
+      calle: data.calle,
+      numero_dir: data.numero_dir,
+      pisoDepto: data.pisoDepto || null,
+      localidad: data.localidad,
+      provincia: data.provincia,
+      codigoPostal: data.codigoPostal,
+      productId: product.id,
+      cantidad: data.cantidad,
+      total,
+      estado: "pendiente",
+    },
+  });
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? new URL(req.url).origin;
+
+  try {
+    const preference = await getPreferenceClient().create({
+      body: {
+        items: [
+          {
+            id: product.id,
+            title: product.nombre,
+            quantity: data.cantidad,
+            unit_price: product.precio,
+            currency_id: "ARS",
+          },
+        ],
+        payer: {
+          name: data.nombre,
+          surname: data.apellido,
+          email: data.email,
+          phone: { number: data.telefono },
+        },
+        external_reference: order.id,
+        back_urls: {
+          success: `${baseUrl}/checkout/success?orderId=${order.id}`,
+          failure: `${baseUrl}/checkout/failure?orderId=${order.id}`,
+          pending: `${baseUrl}/checkout/pending?orderId=${order.id}`,
+        },
+        auto_return: "approved",
+        notification_url: `${baseUrl}/api/mercadopago/webhook`,
+      },
+    });
+
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { mpPreferenceId: preference.id },
+    });
+
+    const redirectUrl = preference.init_point ?? preference.sandbox_init_point;
+
+    if (!redirectUrl) {
+      throw new Error("MercadoPago no devolvió un link de pago");
+    }
+
+    return NextResponse.json({ orderId: order.id, redirectUrl });
+  } catch (error) {
+    console.error("Error creando preferencia de MercadoPago:", error);
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { estado: "cancelado" },
+    });
+    return NextResponse.json(
+      { error: "No se pudo iniciar el pago. Intentá de nuevo en unos minutos." },
+      { status: 502 }
+    );
+  }
+}
