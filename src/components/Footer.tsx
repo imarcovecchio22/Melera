@@ -6,18 +6,13 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#170903]">
-      <div className="container-melera flex flex-col items-center gap-6 py-12 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
-        <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center">
-          <Image
-            src="/brand/melera-logo-compacto-dark.svg"
-            alt="Melera — Miel Artesanal"
-            width={240}
-            height={290}
-            className="w-20"
-          />
-          <p className="max-w-[220px] text-sm text-[#CBB392] sm:max-w-none">
-            Miel artesanal de Tomás Jofré, Buenos Aires.
-          </p>
+      <div className="container-melera flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:justify-between sm:text-left">
+        <div className="flex items-center gap-2">
+          <Image src="/brand/melera-icono-dark.svg" alt="" width={28} height={28} />
+          <div>
+            <p className="font-serif text-lg font-semibold text-[#FFF3DC]">Melera</p>
+            <p className="text-sm text-[#CBB392]">Miel artesanal de Tomás Jofré, Buenos Aires.</p>
+          </div>
         </div>
 
         {numero && (
@@ -31,7 +26,7 @@ export default function Footer() {
           </a>
         )}
       </div>
-      <div className="border-t border-white/10 py-4 text-center text-xs text-[#8A6040]">
+      <div className="border-t border-white/10 py-3 text-center text-xs text-[#8A6040]">
         © {new Date().getFullYear()} Melera. Todos los derechos reservados.
       </div>
     </footer>
