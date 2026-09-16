@@ -6,10 +6,15 @@ export default function Hero() {
     <section className="overflow-hidden bg-gradient-to-b from-miel-50 to-crema">
       <div className="container-melera grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2 lg:py-28">
         <div className="order-2 text-center lg:order-1 lg:text-left">
-          <span className="inline-block rounded-full bg-miel-100 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-miel-700">
-            Directo del campo a tu mesa
-          </span>
-          <h1 className="mt-4 font-caveat text-6xl font-bold leading-tight text-marron sm:text-7xl">
+          <Image
+            src="/brand/melera-logo-completo.svg"
+            alt="Melera — Miel Artesanal, del campo a tu mesa"
+            width={240}
+            height={330}
+            priority
+            className="mx-auto mb-6 w-36 sm:w-44 lg:mx-0"
+          />
+          <h1 className="font-caveat text-6xl font-bold leading-tight text-marron sm:text-7xl">
             Miel artesanal, pura y natural
           </h1>
           <p className="mx-auto mt-4 max-w-md text-lg text-stone-600 lg:mx-0">

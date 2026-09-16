@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 
 const links = [
@@ -21,7 +22,8 @@ export default function AdminNav() {
   return (
     <header className="border-b border-miel-100 bg-white">
       <div className="container-melera flex h-16 items-center justify-between">
-        <Link href="/admin/pedidos" className="font-serif text-xl font-semibold text-miel-700">
+        <Link href="/admin/pedidos" className="flex items-center gap-2 font-serif text-xl font-semibold text-miel-700">
+          <Image src="/brand/melera-icono.svg" alt="" width={28} height={28} />
           Melera · Admin
         </Link>
         <nav className="flex items-center gap-6 text-sm font-medium text-stone-600">

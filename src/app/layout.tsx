@@ -42,10 +42,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/producto-miel.png",
-        width: 433,
-        height: 577,
-        alt: "Frasco de miel artesanal Melera",
+        url: "/melera-og-clara.png",
+        width: 1200,
+        height: 630,
+        alt: "Melera — Miel Artesanal",
       },
     ],
   },
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: ["/producto-miel.png"],
+    images: ["/melera-og-clara.png"],
   },
 };
 

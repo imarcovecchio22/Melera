@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 function LoginForm() {
   const router = useRouter();
@@ -46,9 +47,12 @@ function LoginForm() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-soft"
       >
-        <h1 className="font-serif text-2xl font-semibold text-marron">
-          Panel Melera
-        </h1>
+        <div className="flex items-center gap-2">
+          <Image src="/brand/melera-icono.svg" alt="" width={32} height={32} />
+          <h1 className="font-serif text-2xl font-semibold text-marron">
+            Panel Melera
+          </h1>
+        </div>
         <p className="mt-1 text-sm text-stone-500">Ingresá para gestionar la tienda.</p>
 
         <div className="mt-6 space-y-4">
