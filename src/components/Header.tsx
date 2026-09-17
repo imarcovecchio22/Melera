@@ -6,8 +6,7 @@ export default function Header() {
     <header className="sticky top-0 z-40 border-b border-miel-100 bg-crema/90 backdrop-blur">
       <div className="container-melera flex h-16 items-center justify-between gap-3">
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <Image src="/brand/melera-icono.svg" alt="" width={36} height={36} priority />
-          <span className="font-serif text-2xl font-semibold text-miel-700">Melera</span>
+          <Image src="/brand/melera-logo.png" alt="Melera" width={48} height={48} priority />
         </Link>
         <nav className="flex items-center gap-4 text-sm font-medium text-stone-600 sm:gap-6">
           <Link href="/#producto" className="hidden hover:text-miel-600 sm:inline">

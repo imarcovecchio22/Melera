@@ -7,10 +7,10 @@ export default function Hero() {
       <div className="container-melera grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2 lg:py-28">
         <div className="order-2 text-center lg:order-1 lg:text-left">
           <Image
-            src="/brand/melera-logo-completo.svg"
+            src="/brand/melera-logo.png"
             alt="Melera — Miel Artesanal, del campo a tu mesa"
-            width={240}
-            height={330}
+            width={1024}
+            height={1024}
             priority
             className="mx-auto mb-6 w-36 sm:w-44 lg:mx-0"
           />
