@@ -3,7 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.6-flash";
 const MAX_TURNS = 20;
 
 function buildSystemPrompt() {
