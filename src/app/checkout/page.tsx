@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import CheckoutForm from "@/components/CheckoutForm";
 import { getMainProduct } from "@/lib/product";
 
@@ -29,6 +30,7 @@ export default async function CheckoutPage({
         />
       </main>
       <Footer />
+      <ChatWidget />
     </>
   );
 }

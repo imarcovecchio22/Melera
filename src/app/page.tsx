@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import Hero from "@/components/Hero";
 import QuienesSomos from "@/components/QuienesSomos";
 import ProductoSection from "@/components/ProductoSection";
@@ -19,6 +20,7 @@ export default async function HomePage() {
         <ProductoSection product={product} />
       </main>
       <Footer />
+      <ChatWidget />
     </>
   );
 }

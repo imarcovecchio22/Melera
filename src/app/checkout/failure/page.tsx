@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import { applyPaymentStatus } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,7 @@ export default async function CheckoutFailurePage({
         </div>
       </main>
       <Footer />
+      <ChatWidget />
     </>
   );
 }

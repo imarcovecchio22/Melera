@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import { prisma } from "@/lib/prisma";
 import { applyPaymentStatus } from "@/lib/orders";
 import { formatPrecio } from "@/lib/utils";
@@ -57,6 +58,7 @@ export default async function CheckoutSuccessPage({
         </Link>
       </main>
       <Footer />
+      <ChatWidget />
     </>
   );
 }

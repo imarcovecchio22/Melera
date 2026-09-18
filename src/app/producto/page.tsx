@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import Image from "next/image";
 import QuantitySelector from "@/components/QuantitySelector";
 import { getMainProduct } from "@/lib/product";
@@ -42,6 +43,7 @@ export default async function ProductoPage() {
         </div>
       </main>
       <Footer />
+      <ChatWidget />
     </>
   );
 }
