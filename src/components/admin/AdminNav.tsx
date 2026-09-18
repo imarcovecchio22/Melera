@@ -23,7 +23,7 @@ export default function AdminNav() {
     <header className="border-b border-miel-100 bg-white">
       <div className="container-melera flex h-16 items-center justify-between">
         <Link href="/admin/pedidos" className="flex items-center gap-2 font-serif text-xl font-semibold text-miel-700">
-          <Image src="/brand/melera-icono.svg" alt="" width={28} height={28} />
+          <Image src="/brand/melera-logo.png" alt="" width={32} height={32} />
           Melera · Admin
         </Link>
         <nav className="flex items-center gap-6 text-sm font-medium text-stone-600">

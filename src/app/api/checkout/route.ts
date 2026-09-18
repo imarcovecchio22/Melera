@@ -75,7 +75,8 @@ export async function POST(req: NextRequest) {
           failure: `${baseUrl}/checkout/failure?orderId=${order.id}`,
           pending: `${baseUrl}/checkout/pending?orderId=${order.id}`,
         },
-        auto_return: "approved",
+        // auto_return solo funciona con back_urls en HTTPS: MP lo rechaza en localhost.
+        ...(baseUrl.startsWith("https://") ? { auto_return: "approved" as const } : {}),
         notification_url: `${baseUrl}/api/mercadopago/webhook`,
       },
     });

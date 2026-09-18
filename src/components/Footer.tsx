@@ -8,7 +8,9 @@ export default function Footer() {
     <footer className="bg-[#170903]">
       <div className="container-melera flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:justify-between sm:text-left">
         <div className="flex items-center gap-2">
-          <Image src="/brand/melera-icono-dark.svg" alt="" width={28} height={28} />
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-crema p-1">
+            <Image src="/brand/melera-logo.png" alt="" width={28} height={28} />
+          </span>
           <div>
             <p className="font-serif text-lg font-semibold text-[#FFF3DC]">Melera</p>
             <p className="text-sm text-[#CBB392]">Miel artesanal de Tomás Jofré, Buenos Aires.</p>
