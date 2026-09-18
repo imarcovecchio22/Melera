@@ -1,9 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MODEL = "claude-sonnet-5";
+const MODEL = "gemini-2.5-flash";
 const MAX_TURNS = 20;
 
 function buildSystemPrompt() {
@@ -31,7 +31,7 @@ Si no sabés algo, decís que se comuniquen por WhatsApp.`;
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return new Response("El asistente no está configurado todavía.", { status: 500 });
   }
 
@@ -56,24 +56,26 @@ export async function POST(req: Request) {
     return new Response("Solicitud inválida.", { status: 400 });
   }
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+  const contents = messages.map((m) => ({
+    role: m.role === "assistant" ? ("model" as const) : ("user" as const),
+    parts: [{ text: m.content }],
+  }));
 
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
       try {
-        const anthropicStream = client.messages.stream({
+        const geminiStream = await ai.models.generateContentStream({
           model: MODEL,
-          max_tokens: 500,
-          system: buildSystemPrompt(),
-          messages,
+          contents,
+          config: { systemInstruction: buildSystemPrompt() },
         });
 
-        anthropicStream.on("text", (delta) => {
-          controller.enqueue(encoder.encode(delta));
-        });
-
-        await anthropicStream.finalMessage();
+        for await (const chunk of geminiStream) {
+          if (chunk.text) controller.enqueue(encoder.encode(chunk.text));
+        }
         controller.close();
       } catch (err) {
         console.error("Error en /api/chat:", err);
