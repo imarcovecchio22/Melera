@@ -15,24 +15,9 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const rawBody = await req.text();
-  let body: any = null;
-  try {
-    body = JSON.parse(rawBody);
-  } catch {
-    body = null;
-  }
+  const body = await req.json().catch(() => null);
   if (!body) {
-    return NextResponse.json(
-      { error: "Body inválido", debug_raw: rawBody },
-      { status: 400 }
-    );
-  }
-  if (!body.tipo) {
-    return NextResponse.json(
-      { error: 'Falta el campo "tipo".', debug_body: body, debug_raw: rawBody },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Body inválido" }, { status: 400 });
   }
 
   try {
