@@ -15,14 +15,14 @@ Tienda online de miel artesanal — landing, ficha de producto, checkout con Mer
 - Landing con presentación del producto y sección "Quiénes somos"
 - Página de producto y checkout con selector de cantidad
 - Integración con MercadoPago (Checkout Pro) y webhook de confirmación de pago
-- `/consultas`: preguntas frecuentes (precio real desde la base) + formulario mobile-first para quien llega desde Instagram/ManyChat (responder por Instagram o email, anti-spam con honeypot y tiempo mínimo). Cada consulta se guarda y se avisa por Telegram
-- `?origen=` (ej. `instagram` desde los botones de ManyChat) se guarda en las consultas y en los pedidos que pasan por `/producto` → Comprar → checkout
+- `/consultas`: preguntas frecuentes (precio real desde la base) + formulario mobile-first para quien llega desde Instagram (botones de la respuesta automática; responder por Instagram o email, anti-spam con honeypot y tiempo mínimo). Cada consulta se guarda y se avisa por Telegram
+- `?origen=` (ej. `instagram` desde los botones de la respuesta automática de los DMs) se guarda en las consultas y en los pedidos que pasan por `/producto` → Comprar → checkout
 - Avisos por Telegram de pedidos pagados y consultas nuevas, directo desde la web al bot (`src/lib/telegram.ts`, sin Make). Diagnóstico en `GET/POST /api/admin/telegram` (dice si el bot está configurado y manda un mensaje de prueba)
 - Panel `/admin` protegido: pedidos (estado, detalle, origen), stock, consultas (link directo a ig.me / mailto, marcar respondida, archivar) y **logs**. Fechas en hora de Argentina
 - `/admin/logs`: registro de eventos de la web (pedidos, pagos, consultas, avisos de Telegram, logins y cambios del admin, imágenes de Instagram) con filtros en la URL: `?nivel=error`, `?tipo=pago`, `?q=texto`, `?pagina=2`. Se guarda 90 días. Para registrar algo nuevo: `logEvent(tipo, mensaje, { nivel, detalle })` de `src/lib/logs.ts` (nunca lanza error)
 - `/api/generate` + `/api/img/...`: imágenes de feed y story para Instagram, renderizadas con Chromium en Vercel (plantillas en `melera-templates/`)
 - **Instagram** (`/admin/instagram`): cronograma de posts en la base. Todos los días (Vercel Cron, 9–10 h Argentina) se generan los pendientes y llegan a Telegram con 4 botones (Feed, Historia, Feed + Historia, Descartar). Al tocar uno se publica directo con la Graph API de Meta. Ver "Instagram" más abajo
-- **Respuestas automáticas de Instagram** (`/admin/autorespuestas`, reemplazan a ManyChat): reglas por palabra clave para DMs y comentarios, con botones de link, Probador y registro de los mensajes recibidos. Ver "Respuestas automáticas" más abajo
+- **Respuestas automáticas de Instagram** (`/admin/autorespuestas`, reemplazan a ManyChat): reglas por palabra clave para DMs, con botones de link, Probador y registro de los mensajes recibidos. En producción desde el 2026-09-24 (ManyChat suspendido). Los comentarios están programados pero necesitan acceso avanzado de Meta (App Review), pendiente. Ver "Respuestas automáticas" más abajo
 - `/privacidad`: política de privacidad (Meta la pide para pasar la app a Live)
 
 ## Desarrollo local

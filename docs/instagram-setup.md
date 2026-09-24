@@ -2,6 +2,8 @@
 
 Paso a paso de lo que hay que hacer **a mano** en Meta for Developers para que la web responda sola los DMs y comentarios de @melera.miel (reemplazando a ManyChat). El código ya está: webhook en `/api/instagram/webhook`, reglas en `/admin/autorespuestas`, renovación del token en el cron diario `/api/cron/instagram-token`.
 
+> **Estado (2026-09-24):** pasos 1 a 8 hechos. La app está en Live, el webhook verificado, la regla #1 activa y ManyChat suspendido. Los DMs funcionan sin App Review (probado con una cuenta sin rol en la app). Los secretos se rotaron después de la configuración. Pendiente solo el paso 9 (comentarios), sin apuro.
+
 Esto usa la **Instagram API con Instagram Login** (`graph.instagram.com`). Es independiente de la publicación de posts, que sigue usando el token de página de Facebook (`META_PAGE_TOKEN`): nada de esto la toca.
 
 > Documentación de Meta consultada en septiembre de 2026 (Graph API v25.0). Si alguna pantalla del panel cambió de nombre, buscá el equivalente.
