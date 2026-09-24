@@ -4,8 +4,14 @@ const nextConfig = {
     remotePatterns: [],
   },
   experimental: {
+    // Chromium para renderizar las imágenes de IG: no se empaqueta con webpack
+    serverComponentsExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
     outputFileTracingIncludes: {
-      "/api/generate": ["./melera-templates/*.html", "./melera-templates/logo.png"],
+      "/api/img/[formato]/[token]": [
+        "./melera-templates/*.html",
+        "./melera-templates/logo.png",
+        "./node_modules/@sparticuz/chromium/bin/**",
+      ],
     },
   },
 };

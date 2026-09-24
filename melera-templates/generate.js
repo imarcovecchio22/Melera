@@ -2,6 +2,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const zlib = require('zlib');
+const { renderHtmlToJpeg } = require('./render');
 
 function resolveTemplatesDir() {
   if (fs.existsSync(path.join(__dirname, 'organico-presentacion.html'))) {
@@ -12,7 +15,6 @@ function resolveTemplatesDir() {
 
 const TEMPLATES_DIR = resolveTemplatesDir();
 const OUTPUT_DIR = path.join(__dirname, 'output');
-const HCTI_ENDPOINT = 'https://hcti.io/v1/image';
 
 const ESTILOS = ['organico', 'geo'];
 const TIPOS = ['presentacion', 'producto', 'dato'];
@@ -61,11 +63,11 @@ class ValidationError extends Error {
   }
 }
 
-class HctiError extends Error {
-  constructor(message, statusCode) {
+class SignatureError extends Error {
+  constructor(message) {
     super(message);
-    this.name = 'HctiError';
-    this.statusCode = statusCode || 502;
+    this.name = 'SignatureError';
+    this.statusCode = 403;
   }
 }
 
@@ -153,77 +155,57 @@ function renderTemplate(html, data) {
   return rendered;
 }
 
-async function callHcti(html, formato = 'feed') {
-  const userId = process.env.HCTI_USER_ID;
-  const apiKey = process.env.HCTI_API_KEY;
+// Campos que viajan en la URL de la imagen (el resto no se muestra en las plantillas).
+const TOKEN_FIELDS = [
+  'tipo', 'estilo', 'fecha',
+  'tagline', 'titulo', 'texto', 'cta',
+  'numero', 'texto_dato',
+  'imagen_url', 'nombre_producto', 'caracteristicas', 'precio',
+];
 
-  if (!userId || !apiKey) {
-    throw new Error(
-      'Faltan las variables de entorno HCTI_USER_ID y/o HCTI_API_KEY.'
-    );
+function getSigningSecret() {
+  const secret = process.env.IMAGE_SIGNING_SECRET || process.env.GENERATE_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error('Falta IMAGE_SIGNING_SECRET (o GENERATE_WEBHOOK_SECRET) para firmar las URLs.');
   }
-
-  const auth = Buffer.from(`${userId}:${apiKey}`).toString('base64');
-
-  let response;
-  try {
-    response = await fetch(HCTI_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Basic ${auth}`,
-      },
-      body: JSON.stringify({
-        html,
-        ...FORMATOS[formato],
-        selector: 'body',
-        // da tiempo a que carguen las fuentes y corra el script que achica textos largos
-        ms_delay: 500,
-        google_fonts: 'Fraunces:400,400i,500i,600,700|Poppins:400,500,600',
-      }),
-    });
-  } catch (err) {
-    throw new HctiError(`No se pudo conectar con htmlcsstoimage.com: ${err.message}`);
-  }
-
-  const bodyText = await response.text();
-  let bodyJson;
-  try {
-    bodyJson = JSON.parse(bodyText);
-  } catch {
-    bodyJson = null;
-  }
-
-  if (!response.ok) {
-    const detail = bodyJson?.error || bodyJson?.message || bodyText || response.statusText;
-    throw new HctiError(
-      `htmlcsstoimage.com devolvió un error (${response.status}): ${detail}`,
-      response.status
-    );
-  }
-
-  if (!bodyJson?.url) {
-    throw new HctiError('La respuesta de htmlcsstoimage.com no incluyó una URL de imagen.');
-  }
-
-  return bodyJson.url;
+  return secret;
 }
 
-async function downloadImage(imageUrl, filePath) {
-  let response;
-  try {
-    response = await fetch(imageUrl);
-  } catch (err) {
-    throw new HctiError(`No se pudo descargar la imagen generada: ${err.message}`);
+function sign(payload) {
+  return crypto
+    .createHmac('sha256', getSigningSecret())
+    .update(payload)
+    .digest('base64url')
+    .slice(0, 22);
+}
+
+// Datos del post -> "<json comprimido>.<firma>", para usar en /api/img/<formato>/<token>.jpg
+function createImageToken(data) {
+  const normalized = normalizeData(data);
+  validateData(normalized);
+  const picked = {};
+  for (const key of TOKEN_FIELDS) {
+    if (normalized[key] !== undefined && normalized[key] !== null && normalized[key] !== '') {
+      picked[key] = String(normalized[key]);
+    }
   }
-  if (!response.ok) {
-    throw new HctiError(
-      `No se pudo descargar la imagen generada (${response.status} ${response.statusText}).`
-    );
+  const payload = zlib.deflateRawSync(Buffer.from(JSON.stringify(picked))).toString('base64url');
+  return `${payload}.${sign(payload)}`;
+}
+
+function readImageToken(token) {
+  // tolera ".jpg" agregados al final (el escenario de stories le suma uno)
+  const clean = String(token).replace(/(\.jpe?g)+$/i, '');
+  const [payload, signature] = clean.split('.');
+  if (!payload || !signature) throw new SignatureError('Token inválido.');
+  const expected = sign(payload);
+  if (
+    signature.length !== expected.length ||
+    !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+  ) {
+    throw new SignatureError('Firma inválida.');
   }
-  const buffer = Buffer.from(await response.arrayBuffer());
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, buffer);
+  return JSON.parse(zlib.inflateRawSync(Buffer.from(payload, 'base64url')).toString('utf8'));
 }
 
 let logoSrc;
@@ -245,42 +227,52 @@ function buildHtml(data) {
   return renderTemplate(template, normalized);
 }
 
-async function generateImageUrl(data, formato = 'feed') {
-  return callHcti(buildHtml(data), formato);
-}
-
-// Genera feed (1080x1350) y story (1080x1920) con la misma plantilla.
-async function generateImageUrls(data) {
+function renderImage(data, formato = 'feed') {
+  if (!FORMATOS[formato]) throw new ValidationError(`Formato "${formato}" inválido.`);
   const html = buildHtml(data);
-  const [imageUrl, storyImageUrl] = await Promise.all([
-    callHcti(html, 'feed'),
-    callHcti(html, 'story'),
-  ]);
-  return { image_url: imageUrl, story_image_url: storyImageUrl };
+  const { viewport_width: width, viewport_height: height } = FORMATOS[formato];
+  return renderHtmlToJpeg(html, { width, height });
 }
 
+// URLs públicas de feed (1080x1350) y story (1080x1920) para estos datos.
+function buildImageUrls(data, baseUrl) {
+  const token = createImageToken(data);
+  const base = baseUrl.replace(/\/$/, '');
+  return {
+    image_url: `${base}/api/img/feed/${token}.jpg`,
+    story_image_url: `${base}/api/img/story/${token}.jpg`,
+  };
+}
+
+// Uso local: guarda feed y story en output/.
 async function generateImage(data) {
-  const urls = await generateImageUrls(data);
   const base = `${data.fecha}_${data.estilo}-${data.tipo}`;
-  await downloadImage(urls.image_url, path.join(OUTPUT_DIR, `${base}.png`));
-  await downloadImage(urls.story_image_url, path.join(OUTPUT_DIR, `${base}_story.png`));
-  return { ...urls, filename: `${base}.png`, story_filename: `${base}_story.png` };
+  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  const files = {};
+  for (const formato of Object.keys(FORMATOS)) {
+    const filename = formato === 'feed' ? `${base}.jpg` : `${base}_${formato}.jpg`;
+    fs.writeFileSync(path.join(OUTPUT_DIR, filename), await renderImage(data, formato));
+    files[formato] = filename;
+  }
+  return files;
 }
 
 module.exports = {
+  FORMATOS,
+  buildImageUrls,
+  createImageToken,
+  readImageToken,
+  renderImage,
   generateImage,
-  generateImageUrl,
-  generateImageUrls,
   normalizeData,
   validateData,
   renderTemplate,
   loadTemplate,
   ValidationError,
-  HctiError,
+  SignatureError,
 };
 
 if (require.main === module) {
-  require('dotenv').config();
 
   const arg = process.argv[2];
   if (!arg) {
@@ -303,6 +295,7 @@ if (require.main === module) {
     })
     .catch((err) => {
       console.error(`Error: ${err.message}`);
-      process.exit(1);
-    });
+      process.exitCode = 1;
+    })
+    .finally(() => require('./render').closeBrowser());
 }

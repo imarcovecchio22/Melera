@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const {
-  generateImageUrls,
+  buildImageUrls,
   ValidationError,
-  HctiError,
 } = require("../../../../melera-templates/generate");
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+// Pide una URL y confirma que devuelve una imagen (de paso la deja en la caché de la CDN).
+async function warmImage(url: string) {
+  const res = await fetch(url, { cache: "no-store" });
+  const type = res.headers.get("content-type") || "";
+  if (!res.ok || !type.startsWith("image/")) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`No se pudo renderizar ${url} (${res.status}): ${detail.slice(0, 300)}`);
+  }
+  await res.arrayBuffer();
+}
 
 export async function POST(req: NextRequest) {
   const expectedSecret = process.env.GENERATE_WEBHOOK_SECRET;
@@ -20,27 +33,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Body inválido" }, { status: 400 });
   }
 
+  let urls: { image_url: string; story_image_url: string };
   try {
-    const { image_url, story_image_url } = await generateImageUrls(body);
-    return NextResponse.json({
-      image_url,
-      story_image_url,
-      filename: `${body.fecha}_${body.estilo}-${body.tipo}.png`,
-    });
+    const baseUrl = process.env.PUBLIC_BASE_URL || req.nextUrl.origin;
+    urls = buildImageUrls(body, baseUrl);
   } catch (error: any) {
     if (error instanceof ValidationError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    if (error instanceof HctiError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.statusCode || 502 }
-      );
-    }
-    console.error("Error generando imagen IG:", error);
-    return NextResponse.json(
-      { error: `Error interno: ${error?.message}` },
-      { status: 500 }
-    );
+    console.error("Error generando URLs IG:", error);
+    return NextResponse.json({ error: `Error interno: ${error?.message}` }, { status: 500 });
   }
+
+  try {
+    await Promise.all([warmImage(urls.image_url), warmImage(urls.story_image_url)]);
+  } catch (error: any) {
+    console.error("Error renderizando imagen IG:", error);
+    return NextResponse.json({ error: error.message }, { status: 502 });
+  }
+
+  return NextResponse.json({
+    ...urls,
+    filename: `${body.fecha}_${body.estilo}-${body.tipo}.jpg`,
+  });
 }
