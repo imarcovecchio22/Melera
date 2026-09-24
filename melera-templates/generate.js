@@ -155,8 +155,19 @@ function escapeRichHtml(value) {
 
 // imagen_url va dentro de url('...') en el CSS: ahí no se decodifican entidades,
 // así que solo se sacan los caracteres que podrían romper la regla.
+// (encodeURIComponent no sirve acá: deja ' ( ) sin codificar)
+const CSS_URL_ESCAPES = {
+  "'": '%27',
+  '"': '%22',
+  '(': '%28',
+  ')': '%29',
+  '\\': '%5C',
+  '<': '%3C',
+  '>': '%3E',
+};
+
 function sanitizeCssUrl(value) {
-  return String(value).replace(/['"()\\<>\s]/g, (c) => encodeURIComponent(c));
+  return String(value).replace(/['"()\\<>]|\s/g, (c) => CSS_URL_ESCAPES[c] ?? encodeURIComponent(c));
 }
 
 function renderTemplate(html, data) {
