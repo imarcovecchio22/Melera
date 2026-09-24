@@ -5,6 +5,9 @@ export const dynamic = "force-dynamic";
 
 const MODEL = "gemini-3.6-flash";
 const MAX_TURNS = 20;
+// Evita que alguien gaste la cuota de Gemini mandando textos enormes.
+const MAX_CHARS_POR_MENSAJE = 1000;
+const MAX_CHARS_TOTAL = 8000;
 
 function buildSystemPrompt() {
   const whatsapp = process.env.WHATSAPP_NUMBER;
@@ -47,7 +50,11 @@ export async function POST(req: Request) {
           ((m as ChatMessage).role === "user" || (m as ChatMessage).role === "assistant") &&
           typeof (m as ChatMessage).content === "string"
       )
-      .slice(-MAX_TURNS);
+      .slice(-MAX_TURNS)
+      .map((m: ChatMessage) => ({ role: m.role, content: m.content.slice(0, MAX_CHARS_POR_MENSAJE) }));
+    if (messages.reduce((total, m) => total + m.content.length, 0) > MAX_CHARS_TOTAL) {
+      throw new Error("conversación demasiado larga");
+    }
   } catch {
     return new Response("Solicitud inválida.", { status: 400 });
   }

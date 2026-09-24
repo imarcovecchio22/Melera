@@ -3,11 +3,23 @@ import { prisma } from "@/lib/prisma";
 import { consultaSchema } from "@/lib/validation";
 import { notifyNuevaConsulta } from "@/lib/consultas";
 import { errorMessage, logEvent } from "@/lib/logs";
+import { clientIp, demasiadosIntentos } from "@/lib/security";
 
 // Menos que esto desde que se abrió el formulario = lo completó un bot.
 const TIEMPO_MINIMO_MS = 3000;
 
 export async function POST(req: NextRequest) {
+  const ip = clientIp(req);
+  if (
+    await demasiadosIntentos({ tipo: "consulta", mensajeEmpiezaCon: "Consulta #", ip, maximo: 5, ventanaMinutos: 10 })
+  ) {
+    await logEvent("consulta", "Consulta bloqueada: demasiadas desde la misma IP", { nivel: "warn", detalle: { ip } });
+    return NextResponse.json(
+      { ok: false, error: "Recibimos varias consultas seguidas. Esperá unos minutos y volvé a intentar." },
+      { status: 429 }
+    );
+  }
+
   const body = await req.json().catch(() => null);
   if (!body) {
     return NextResponse.json(
@@ -32,6 +44,7 @@ export async function POST(req: NextRequest) {
       detalle: {
         motivo: data.empresa.trim() !== "" ? "honeypot completo" : `enviado en ${data.tiempo} ms`,
         nombre: data.nombre,
+        ip,
       },
     });
     return NextResponse.json({ ok: true });
@@ -53,6 +66,7 @@ export async function POST(req: NextRequest) {
       canal: consulta.canal,
       contacto: consulta.instagram ?? consulta.email,
       origen: consulta.origen,
+      ip,
     },
   });
 

@@ -16,6 +16,27 @@ const LOCAL_BROWSERS = [
 
 let browserPromise;
 
+const HOSTS_PRIVADOS = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|0\.|\[?::1\]?$)/i;
+
+// Qué puede cargar la plantilla mientras se dibuja: fuentes de Google e imágenes
+// https públicas. Todo lo demás (scripts externos, fetch, redes internas) se bloquea.
+function pedidoPermitido(request) {
+  const url = request.url();
+  if (url.startsWith('data:') || url === 'about:blank') return true;
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== 'https:' || HOSTS_PRIVADOS.test(parsed.hostname)) return false;
+  const tipo = request.resourceType();
+  if (tipo === 'stylesheet' || tipo === 'font') {
+    return parsed.hostname === 'fonts.googleapis.com' || parsed.hostname === 'fonts.gstatic.com';
+  }
+  return tipo === 'image';
+}
+
 async function launchBrowser() {
   const { default: puppeteer } = await import('puppeteer-core');
 
@@ -49,6 +70,11 @@ async function renderHtmlToJpeg(html, { width, height }) {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      if (pedidoPermitido(request)) request.continue();
+      else request.abort();
+    });
     await page.setViewport({ width, height, deviceScaleFactor: 1 });
     await page.setContent(html, { waitUntil: 'networkidle0', timeout: 25000 });
     // fuentes cargadas + script que achica textos largos
@@ -69,4 +95,4 @@ async function closeBrowser() {
   if (browser) await browser.close().catch(() => {});
 }
 
-module.exports = { renderHtmlToJpeg, closeBrowser };
+module.exports = { renderHtmlToJpeg, closeBrowser, pedidoPermitido };

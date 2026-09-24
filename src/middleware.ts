@@ -16,8 +16,25 @@ async function isValidSession(token: string | undefined) {
   }
 }
 
+// Un navegador siempre manda Origin en POST/PATCH/DELETE; si viene de otro sitio, se rechaza
+// (defensa extra contra CSRF, además de la cookie SameSite=Lax).
+function origenAjeno(req: NextRequest) {
+  if (req.method === "GET" || req.method === "HEAD") return false;
+  const origin = req.headers.get("origin");
+  if (!origin) return false;
+  try {
+    return new URL(origin).host !== req.nextUrl.host;
+  } catch {
+    return true;
+  }
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  if (pathname.startsWith("/api/admin/") && origenAjeno(req)) {
+    return NextResponse.json({ error: "Origen no permitido" }, { status: 403 });
+  }
 
   if (pathname === "/admin/login" || pathname === "/api/admin/login") {
     return NextResponse.next();

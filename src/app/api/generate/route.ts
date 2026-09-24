@@ -5,6 +5,7 @@ const {
   ValidationError,
 } = require("../../../../melera-templates/generate");
 import { errorMessage, logEvent } from "@/lib/logs";
+import { esUrlPublicaHttps, safeEqual } from "@/lib/security";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
   const expectedSecret = process.env.GENERATE_WEBHOOK_SECRET;
   if (expectedSecret) {
     const receivedSecret = req.headers.get("x-webhook-secret");
-    if (receivedSecret !== expectedSecret) {
+    if (!safeEqual(receivedSecret, expectedSecret)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
   }
@@ -61,9 +62,15 @@ export async function POST(req: NextRequest) {
 
   // La foto del producto tiene que ser una imagen pública; si no, el post sale sin foto.
   if (body.imagen_url) {
-    body.imagen_url = new URL(String(body.imagen_url).trim(), baseUrl).toString();
+    try {
+      body.imagen_url = new URL(String(body.imagen_url).trim(), baseUrl).toString();
+    } catch {
+      return NextResponse.json({ error: `imagen_url no es una URL válida: ${body.imagen_url}` }, { status: 400 });
+    }
     if (body.tipo === "producto") {
-      const problema = await checkImage(body.imagen_url);
+      const problema = esUrlPublicaHttps(body.imagen_url)
+        ? await checkImage(body.imagen_url)
+        : "tiene que ser un link https público";
       if (problema) {
         await logEvent("imagen", `Post ${body.tipo}/${body.estilo} del ${body.fecha}: la foto no es una imagen`, {
           nivel: "warn",
