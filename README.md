@@ -1,6 +1,6 @@
 # Melera
 
-Tienda online de miel artesanal — landing, ficha de producto, checkout con MercadoPago, sección de consultas, avisos por Telegram y panel de administración de pedidos, stock, consultas y logs. Incluye además el generador de imágenes de Instagram que usa la automatización de Make (ver `melera-templates/README.md`).
+Tienda online de miel artesanal — landing, ficha de producto, checkout con MercadoPago, sección de consultas, avisos por Telegram y panel de administración de pedidos, stock, consultas y logs. También maneja la publicación en Instagram de punta a punta (cronograma, textos con Gemini, imágenes, aprobación por Telegram y publicación con la API de Meta), sin Make ni Buffer.
 
 ## Stack
 
@@ -20,7 +20,8 @@ Tienda online de miel artesanal — landing, ficha de producto, checkout con Mer
 - Avisos por Telegram de pedidos pagados y consultas nuevas, directo desde la web al bot (`src/lib/telegram.ts`, sin Make). Diagnóstico en `GET/POST /api/admin/telegram` (dice si el bot está configurado y manda un mensaje de prueba)
 - Panel `/admin` protegido: pedidos (estado, detalle, origen), stock, consultas (link directo a ig.me / mailto, marcar respondida, archivar) y **logs**. Fechas en hora de Argentina
 - `/admin/logs`: registro de eventos de la web (pedidos, pagos, consultas, avisos de Telegram, logins y cambios del admin, imágenes de Instagram) con filtros en la URL: `?nivel=error`, `?tipo=pago`, `?q=texto`, `?pagina=2`. Se guarda 90 días. Para registrar algo nuevo: `logEvent(tipo, mensaje, { nivel, detalle })` de `src/lib/logs.ts` (nunca lanza error)
-- `/api/generate` + `/api/img/...`: imágenes de feed y story para Instagram, renderizadas con Chromium en Vercel
+- `/api/generate` + `/api/img/...`: imágenes de feed y story para Instagram, renderizadas con Chromium en Vercel (plantillas en `melera-templates/`)
+- **Instagram** (`/admin/instagram`): cronograma de posts en la base. Todos los días (Vercel Cron, 9–10 h Argentina) se generan los pendientes y llegan a Telegram con 4 botones (Feed, Historia, Feed + Historia, Descartar). Al tocar uno se publica directo con la Graph API de Meta. Ver "Instagram" más abajo
 
 ## Desarrollo local
 
@@ -55,6 +56,12 @@ npm run dev                  # http://localhost:3000
 | `GEMINI_API_KEY` | API key de Gemini para el chat de atención (widget flotante) |
 | `GENERATE_WEBHOOK_SECRET` | Secreto que Make manda en `x-webhook-secret` a `/api/generate`; también firma las URLs de `/api/img` |
 | `IMAGE_SIGNING_SECRET` | Opcional: secreto propio para firmar las URLs de `/api/img` (si no está, usa `GENERATE_WEBHOOK_SECRET`) |
+| `META_PAGE_TOKEN` | Token de la página de Facebook vinculada a Instagram (publica feed e historias). Vence cada ~60 días |
+| `META_IG_USER_ID` | Id de la cuenta de Instagram (`17841431194977725`) |
+| `TELEGRAM_WEBHOOK_SECRET` | Clave que Telegram manda en cada toque de botón (16+ caracteres: letras, números, `_` o `-`) |
+| `CRON_SECRET` | Clave con la que Vercel Cron llama a `/api/cron/instagram` |
+| `IG_DRY_RUN` | `true` = hace todo menos publicar en Instagram (para probar) |
+| `GEMINI_COPY_MODEL` | Opcional: modelo de Gemini para los textos (por defecto `gemini-flash-lite-latest`) |
 
 `NEXTAUTH_SECRET` es obligatoria en producción: sin ella el login de `/admin` falla después de validar usuario y contraseña (el middleware tampoco puede verificar la sesión). Después de cargar o cambiar una variable en Vercel hay que hacer **Redeploy**: los deploys que ya existen no la toman.
 
@@ -65,6 +72,7 @@ Ver `.env.example` para el detalle completo.
 | Comando | Descripción |
 |---|---|
 | `npm run dev` | Servidor de desarrollo |
+| `npm test` | Pruebas automáticas (vitest, carpeta `tests/`) |
 | `npm run build` | `prisma generate` + build de producción |
 | `npm start` | Levanta el build de producción |
 | `npx prisma migrate dev --name <nombre>` | Crea una migración nueva a partir de cambios en `schema.prisma` (contra una base de desarrollo) |
@@ -72,6 +80,22 @@ Ver `.env.example` para el detalle completo.
 | `npm run db:push` | Sincroniza el schema sin migraciones — ya no se usa desde 2026-09-24 |
 | `npm run db:studio` | Abre Prisma Studio |
 | `npm run db:seed` | Carga datos de ejemplo |
+
+## Instagram
+
+- **Cargar posts:** `/admin/instagram` (fecha, tipo, estilo, tema; en productos también nombre, precio y foto). Cada post pasa por `pendiente → generando → esperando_aprobacion → publicando → publicado` (o `descartado` / `error`). Cada cambio de estado es atómico, así que no hay doble publicación.
+- **Generación:** `/api/cron/instagram` (Vercel Cron, `vercel.json`) toma hasta 3 pendientes por corrida. También avisa por Telegram si el token de Meta vence en 7 días o menos. Desde el admin se puede generar al momento.
+- **Aprobación:** Telegram llama a `/api/telegram/webhook` (clave secreta, solo el chat de Melera). Para que los botones lleguen a esta web hay que tocar una vez **"Conectar el bot a esta web"** en `/admin/instagram`.
+- **Código:** `src/lib/instagram/`. Los errores quedan en `/admin/logs?tipo=instagram` y llegan por Telegram.
+- **Previews:** el cron solo corre en producción. Para probar los botones en una preview, activar *Protection Bypass for Automation* en Vercel y usar `IG_DRY_RUN=true`.
+
+## Seguridad
+
+- Login del admin: comparación de claves resistente a ataques de tiempo y bloqueo de 15 min tras 5 intentos fallidos por IP.
+- `/api/admin/*` rechaza cambios que vengan de otro origen (CSRF). Headers de seguridad en todo el sitio.
+- Límites: 5 consultas por IP cada 10 min; largo máximo de los mensajes del chat.
+- Las URLs que carga el servidor (fotos de producto) tienen que ser https públicas. Al dibujar imágenes, Chromium solo puede cargar fuentes de Google e imágenes https públicas.
+- Pendiente: pasar a Next.js 16 (Next 14.2 tiene avisos de seguridad que solo se corrigen en la 16) y actualizar `mercadopago`.
 
 ## Base de datos
 

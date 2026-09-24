@@ -70,6 +70,10 @@ Obligatorios por tipo: presentación `tagline`, `titulo`, `texto` · dato `numer
 
 `tag_inferior`, `intro_label`, `unidad`, `descripcion`, `categoria`, `presentacion` y `hashtags` no se muestran en la imagen.
 
+## Quién las usa
+
+Desde el 2026-09-24 las usa la propia web: `src/lib/instagram/generar.ts` llama a `buildImageUrls` directamente para cada post del cronograma (`/admin/instagram`). `/api/generate` sigue disponible por si otro sistema necesita generar imágenes con la clave `x-webhook-secret`.
+
 ## Endpoints
 
 ### `POST /api/generate`
