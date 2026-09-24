@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ENTRADA_VISTA_KEY } from "@/components/panal/config";
 import { MotorPanal } from "@/components/panal/motor";
+import { Abeja } from "@/components/panal/abeja";
 import { quitarVeloEntrada } from "@/components/panal/velo";
 
 function entradaYaVista() {
@@ -25,6 +26,7 @@ function marcarEntradaVista() {
 /**
  * Fondo de panal en canvas (fijo, detrás del contenido) + canvas de efectos (entrada y abeja,
  * encima, sin capturar clics). La entrada va solo en la home, una vez por sesión.
+ * No se monta en /checkout (tiene su propio layout, sin panal ni abeja).
  */
 export default function Panal() {
   const fondo = useRef<HTMLCanvasElement>(null);
@@ -44,6 +46,7 @@ export default function Panal() {
       efectos: efectos.current,
       entrada,
       logoEntrada: logo,
+      actor: new Abeja(),
       onEntrada: (activa) => {
         setSaltarVisible(activa);
         if (activa) {
