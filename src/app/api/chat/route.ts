@@ -1,6 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { logEvent } from "@/lib/logs";
 import { clientIp, demasiadosIntentos } from "@/lib/security";
+import { getMainProduct } from "@/lib/product";
+import { formatPrecio } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +16,8 @@ const MAX_CHARS_TOTAL = 8000;
 const MAX_MENSAJES_POR_IP = 20;
 const VENTANA_MINUTOS = 10;
 
-function buildSystemPrompt() {
+/** Instrucciones del asistente, con el precio actual del frasco (se edita en /admin/stock). */
+function buildSystemPrompt(precio: string) {
   const whatsapp = process.env.WHATSAPP_NUMBER;
   const whatsappLine = whatsapp
     ? `- WhatsApp de contacto: ${whatsapp}`
@@ -23,10 +26,10 @@ function buildSystemPrompt() {
   return `Sos el asistente virtual de Melera, una marca de miel artesanal de Tomás Jofré, Buenos Aires. Respondés preguntas de clientes de forma amigable, breve y en español rioplatense informal (tuteás). Solo respondés preguntas relacionadas con Melera y la miel. Si te preguntan algo que no tiene que ver, redirigís amablemente.
 
 Información que conocés:
-- Producto: Miel Artesanal 500g, frasco de vidrio, $6.500
+- Producto: Miel Artesanal 500g, frasco de vidrio, ${precio}
 - Elaboración: producida por Apícola Mercedes en Tomás Jofré, Bs As. 100% artesanal, sin aditivos, sin procesos industriales, sin azúcar agregada, sin conservantes. Las abejas recolectan néctar de flores silvestres de la zona.
-- Envíos: Mercado Envíos para compras por Mercado Libre. Para compras directas: Correo Argentino al interior del país, Rappi para envíos en CABA el mismo día. El costo de envío lo paga el cliente.
-- Pago: Mercado Pago, transferencia bancaria/CVU, efectivo solo en retiro personal.
+- Envíos: por ahora solo dentro de CABA. El envío se coordina por WhatsApp después de la compra. Pronto se suman más zonas; si la persona está fuera de CABA, que escriba en melera.vercel.app/consultas y le avisamos.
+- Pago: online con Mercado Pago, al finalizar la compra en la web.
 - Retiro personal: disponible, se coordina por WhatsApp.
 - Compras mayoristas: disponibles, se consultan por WhatsApp.
 ${whatsappLine}
@@ -87,6 +90,7 @@ export async function POST(req: Request) {
   await logEvent("chat", "Mensaje al chat", { detalle: { ip } });
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const precio = formatPrecio((await getMainProduct()).precio);
 
   const contents = messages.map((m) => ({
     role: m.role === "assistant" ? ("model" as const) : ("user" as const),
@@ -100,7 +104,7 @@ export async function POST(req: Request) {
         const geminiStream = await ai.models.generateContentStream({
           model: MODEL,
           contents,
-          config: { systemInstruction: buildSystemPrompt() },
+          config: { systemInstruction: buildSystemPrompt(precio) },
         });
 
         for await (const chunk of geminiStream) {

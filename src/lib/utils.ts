@@ -1,9 +1,9 @@
-export function formatPrecio(centavos: number) {
+export function formatPrecio(pesos: number) {
   return new Intl.NumberFormat("es-AR", {
     style: "currency",
     currency: "ARS",
     maximumFractionDigits: 0,
-  }).format(centavos);
+  }).format(pesos);
 }
 
 /** Fecha de hace `ms` milisegundos (para filtros "últimas 24 h", ventanas, etc.). */

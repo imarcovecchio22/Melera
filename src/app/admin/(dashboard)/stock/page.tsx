@@ -8,9 +8,9 @@ export default async function AdminStockPage() {
 
   return (
     <div className="max-w-xl">
-      <h1 className="font-serif text-2xl font-semibold text-marron">Stock</h1>
+      <h1 className="font-serif text-2xl font-semibold text-marron">Precio y stock</h1>
       <p className="mt-1 text-sm text-stone-500">
-        Gestioná las unidades disponibles del producto.
+        El precio se usa en la tienda, en /consultas, en el chat y en las respuestas automáticas de Instagram.
       </p>
 
       <div className="mt-6">

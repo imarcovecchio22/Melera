@@ -9,32 +9,8 @@ type Props = {
   origen?: string;
 };
 
-const PROVINCIAS = [
-  "Buenos Aires",
-  "CABA",
-  "Catamarca",
-  "Chaco",
-  "Chubut",
-  "Córdoba",
-  "Corrientes",
-  "Entre Ríos",
-  "Formosa",
-  "Jujuy",
-  "La Pampa",
-  "La Rioja",
-  "Mendoza",
-  "Misiones",
-  "Neuquén",
-  "Río Negro",
-  "Salta",
-  "San Juan",
-  "San Luis",
-  "Santa Cruz",
-  "Santa Fe",
-  "Santiago del Estero",
-  "Tierra del Fuego",
-  "Tucumán",
-];
+// Por ahora solo se envía dentro de CABA (el envío se coordina después de la compra).
+const ZONA_DE_ENVIO = "CABA";
 
 export default function CheckoutForm({ producto, cantidadInicial, origen }: Props) {
   const [cantidad, setCantidad] = useState(cantidadInicial);
@@ -122,7 +98,7 @@ export default function CheckoutForm({ producto, cantidadInicial, origen }: Prop
               <input className="input-field" id="pisoDepto" name="pisoDepto" />
             </div>
             <div>
-              <label className="label-field" htmlFor="localidad">Localidad</label>
+              <label className="label-field" htmlFor="localidad">Barrio</label>
               <input className="input-field" id="localidad" name="localidad" required />
             </div>
             <div>
@@ -131,13 +107,12 @@ export default function CheckoutForm({ producto, cantidadInicial, origen }: Prop
             </div>
           </div>
           <div>
-            <label className="label-field" htmlFor="provincia">Provincia</label>
-            <select className="input-field" id="provincia" name="provincia" required defaultValue="">
-              <option value="" disabled>Seleccioná una provincia</option>
-              {PROVINCIAS.map((p) => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
+            <label className="label-field" htmlFor="provincia">Zona de envío</label>
+            <input className="input-field bg-stone-50" id="provincia" value={ZONA_DE_ENVIO} readOnly aria-describedby="zona-ayuda" />
+            <input type="hidden" name="provincia" value={ZONA_DE_ENVIO} />
+            <p id="zona-ayuda" className="mt-1 text-xs text-stone-500">
+              Por ahora enviamos solo dentro de CABA. Pronto sumamos más zonas.
+            </p>
           </div>
         </fieldset>
       </div>
@@ -172,7 +147,7 @@ export default function CheckoutForm({ producto, cantidadInicial, origen }: Prop
           <span>{formatPrecio(total)}</span>
         </div>
         <p className="mt-2 text-xs text-stone-400">
-          El costo de envío se coordina por WhatsApp luego de la compra.
+          Envío dentro de CABA: lo coordinamos por WhatsApp luego de la compra.
         </p>
 
         {error && (

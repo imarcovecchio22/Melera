@@ -32,11 +32,12 @@ export default async function ConsultasPage({
       pregunta: "¿Hacen envíos? ¿A qué zonas?",
       respuesta: (
         <>
-          Sí, hacemos envíos a CABA. Para otras zonas lo coordinamos con vos:{" "}
+          Por ahora enviamos solo dentro de CABA, y el envío lo coordinamos con vos después de la
+          compra. Pronto vamos a sumar más zonas: si estás en otro lugar,{" "}
           <a href="#escribinos" className="font-semibold text-miel-700 underline underline-offset-4">
             escribinos acá abajo
           </a>{" "}
-          y te contamos las opciones.
+          y te avisamos.
         </>
       ),
     },

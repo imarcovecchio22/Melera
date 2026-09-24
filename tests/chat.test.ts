@@ -13,6 +13,8 @@ vi.mock("@google/genai", () => ({
   },
 }));
 
+vi.mock("@/lib/product", () => ({ getMainProduct: async () => ({ precio: 7200 }) }));
+
 import { POST } from "@/app/api/chat/route";
 
 const pedido = (messages: unknown) =>
@@ -34,6 +36,15 @@ describe("/api/chat", () => {
     expect(res.status).toBe(200);
     expect(await res.text()).toContain("¡Hola!");
     expect(logs.logEvent).toHaveBeenCalledWith("chat", "Mensaje al chat", { detalle: { ip: "1.2.3.4" } });
+  });
+
+  it("le pasa a Gemini el precio actual de la base y los envíos solo a CABA", async () => {
+    await POST(pedido([{ role: "user", content: "cuánto sale?" }]));
+    const instrucciones: string = gemini.generateContentStream.mock.calls[0][0].config.systemInstruction;
+    expect(instrucciones).toMatch(/\$\s?7\.200/);
+    expect(instrucciones).not.toContain("6.500");
+    expect(instrucciones).toContain("solo dentro de CABA");
+    expect(instrucciones).not.toMatch(/Rappi|Correo Argentino|transferencia/);
   });
 
   it("con demasiados mensajes de la misma IP corta con 429 sin llamar a Gemini", async () => {
