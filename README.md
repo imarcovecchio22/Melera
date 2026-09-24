@@ -15,7 +15,7 @@ Tienda online de miel artesanal — landing, ficha de producto, checkout con Mer
 - Landing con presentación del producto y sección "Quiénes somos"
 - Página de producto y checkout con selector de cantidad
 - Integración con MercadoPago (Checkout Pro) y webhook de confirmación de pago
-- `/consultas`: preguntas frecuentes (precio real desde la base) + formulario mobile-first para quien llega desde Instagram/ManyChat (responder por Instagram o email, anti-spam con honeypot y tiempo mínimo). Cada consulta se guarda y se avisa a Make → Telegram
+- `/consultas`: preguntas frecuentes (precio real desde la base) + formulario mobile-first para quien llega desde Instagram/ManyChat (responder por Instagram o email, anti-spam con honeypot y tiempo mínimo). Cada consulta se guarda y se avisa por Telegram
 - `?origen=` (ej. `instagram` desde los botones de ManyChat) se guarda en las consultas y en los pedidos que pasan por `/producto` → Comprar → checkout
 - Panel `/admin` protegido: pedidos (estado, detalle, origen), stock y consultas (link directo a ig.me / mailto, marcar respondida, archivar). Fechas en hora de Argentina
 - `/api/generate` + `/api/img/...`: imágenes de feed y story para Instagram, renderizadas con Chromium en Vercel
@@ -48,8 +48,8 @@ npm run dev                  # http://localhost:3000
 | `NEXTAUTH_URL` | URL base del sitio (usada en la sesión) |
 | `WHATSAPP_NUMBER` | Número de contacto para el botón de WhatsApp (código de país, sin `+`) |
 | `NEXT_PUBLIC_BASE_URL` | URL pública del sitio, usada en los redirects de MercadoPago |
-| `MAKE_ORDER_WEBHOOK_URL` | Webhook de Make para avisar por Telegram un pedido pagado (opcional) |
-| `MAKE_CONSULTA_WEBHOOK_URL` | Webhook de Make para avisar por Telegram una consulta nueva (opcional) |
+| `TELEGRAM_BOT_TOKEN` | Token del bot de Telegram que avisa pedidos pagados y consultas nuevas (opcional; sin él no se avisa) |
+| `TELEGRAM_CHAT_ID` | Chat donde llegan esos avisos (`6219737981`, el mismo de la automatización de Instagram) |
 | `GEMINI_API_KEY` | API key de Gemini para el chat de atención (widget flotante) |
 | `GENERATE_WEBHOOK_SECRET` | Secreto que Make manda en `x-webhook-secret` a `/api/generate`; también firma las URLs de `/api/img` |
 | `IMAGE_SIGNING_SECRET` | Opcional: secreto propio para firmar las URLs de `/api/img` (si no está, usa `GENERATE_WEBHOOK_SECRET`) |

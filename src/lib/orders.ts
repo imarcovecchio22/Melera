@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getPaymentClient } from "@/lib/mercadopago";
+import { sendTelegramMessage, siteUrl } from "@/lib/telegram";
+import { formatPrecio } from "@/lib/utils";
 import type { OrderStatus, Product } from "@prisma/client";
 
 export function mapMpStatus(status: string): OrderStatus | null {
@@ -79,8 +81,9 @@ async function applyPayment(
   });
 
   if (pasaAPagado && product) {
-    notifyOrderPaid(updated, product).catch((error) => {
-      console.error("Error notificando pedido pagado a Make:", error);
+    // Se espera (con timeout) para que Vercel no corte el envío al terminar la respuesta.
+    await notifyOrderPaid(updated, product).catch((error) => {
+      console.error("Error notificando pedido pagado por Telegram:", error);
     });
   }
 
@@ -88,28 +91,31 @@ async function applyPayment(
 }
 
 /**
- * Avisa a Make.com (que reenvía por Telegram) que un pedido se pagó.
+ * Avisa por Telegram que un pedido se pagó.
  * Best-effort: nunca debe afectar la confirmación del pago si falla o
- * si la variable de entorno no está configurada.
+ * si el bot no está configurado.
  */
 async function notifyOrderPaid(
-  order: { numero: number; nombre: string; apellido: string; cantidad: number; total: number },
+  order: {
+    id: string;
+    numero: number;
+    nombre: string;
+    apellido: string;
+    cantidad: number;
+    total: number;
+    localidad: string;
+    provincia: string;
+    origen: string | null;
+  },
   product: { nombre: string; stock: number }
 ) {
-  const webhookUrl = process.env.MAKE_ORDER_WEBHOOK_URL;
-  if (!webhookUrl) return;
-
-  await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      numero: order.numero,
-      nombre: order.nombre,
-      apellido: order.apellido,
-      producto: product.nombre,
-      cantidad: order.cantidad,
-      total: order.total,
-      stockRestante: product.stock,
-    }),
-  });
+  await sendTelegramMessage(
+    [
+      `🛒 Pedido #${order.numero} pagado`,
+      `${order.nombre} ${order.apellido} · ${order.localidad}, ${order.provincia}`,
+      `${product.nombre} × ${order.cantidad} — ${formatPrecio(order.total)}`,
+      `Stock restante: ${product.stock} · origen: ${order.origen ?? "directo"}`,
+      `Admin: ${siteUrl()}/admin/pedidos/${order.id}`,
+    ].join("\n")
+  );
 }

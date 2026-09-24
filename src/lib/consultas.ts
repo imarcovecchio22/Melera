@@ -1,4 +1,5 @@
 import type { Consulta } from "@prisma/client";
+import { sendTelegramMessage, siteUrl } from "@/lib/telegram";
 
 /** Link para responder la consulta: DM de Instagram o mail. */
 export function contactoHref(consulta: Pick<Consulta, "canal" | "instagram" | "email">) {
@@ -12,25 +13,23 @@ export function contactoHref(consulta: Pick<Consulta, "canal" | "instagram" | "e
 }
 
 /**
- * Avisa a Make.com (que reenvía por Telegram) que llegó una consulta nueva.
+ * Avisa por Telegram que llegó una consulta nueva.
  * Best-effort: nunca debe afectar la respuesta al cliente si falla, tarda
- * o si la variable de entorno no está configurada.
+ * o si el bot no está configurado.
  */
 export async function notifyNuevaConsulta(consulta: Consulta) {
-  const webhookUrl = process.env.MAKE_CONSULTA_WEBHOOK_URL;
-  if (!webhookUrl) return;
+  const contacto = consulta.canal === "instagram" ? consulta.instagram : consulta.email;
+  const responder = contactoHref(consulta);
 
-  await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    signal: AbortSignal.timeout(4000),
-    body: JSON.stringify({
-      id: consulta.id,
-      nombre: consulta.nombre,
-      canal: consulta.canal,
-      contacto: consulta.canal === "instagram" ? consulta.instagram : consulta.email,
-      mensaje: consulta.mensaje,
-      origen: consulta.origen,
-    }),
-  });
+  await sendTelegramMessage(
+    [
+      `💬 Consulta #${consulta.id} de ${consulta.nombre}`,
+      `${consulta.canal === "instagram" ? "Instagram" : "Email"}: ${contacto} · origen: ${consulta.origen ?? "directo"}`,
+      "",
+      consulta.mensaje,
+      "",
+      ...(responder ? [`Responder: ${responder}`] : []),
+      `Admin: ${siteUrl()}/admin/consultas`,
+    ].join("\n")
+  );
 }
