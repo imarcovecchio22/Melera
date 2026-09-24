@@ -8,8 +8,13 @@ import { formatPrecio } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductoPage() {
+export default async function ProductoPage({
+  searchParams,
+}: {
+  searchParams: { origen?: string | string[] };
+}) {
   const product = await getMainProduct();
+  const origen = Array.isArray(searchParams.origen) ? searchParams.origen[0] : searchParams.origen;
 
   return (
     <>
@@ -37,7 +42,7 @@ export default async function ProductoPage() {
               {formatPrecio(product.precio)}
             </p>
             <div className="mt-8">
-              <QuantitySelector stock={product.stock} />
+              <QuantitySelector stock={product.stock} origen={origen} />
             </div>
           </div>
         </div>

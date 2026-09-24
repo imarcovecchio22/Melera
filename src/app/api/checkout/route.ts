@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
       cantidad: data.cantidad,
       total,
       estado: "pendiente",
+      origen: data.origen || null,
     },
   });
 

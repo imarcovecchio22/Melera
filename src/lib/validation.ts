@@ -12,6 +12,7 @@ export const checkoutSchema = z.object({
   provincia: z.string().trim().min(1, "Ingresá la provincia"),
   codigoPostal: z.string().trim().min(1, "Ingresá el código postal"),
   cantidad: z.coerce.number().int().min(1, "La cantidad mínima es 1"),
+  origen: z.string().trim().max(50).optional().default(""),
 });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;

@@ -6,6 +6,7 @@ import { formatPrecio } from "@/lib/utils";
 type Props = {
   producto: { nombre: string; precio: number };
   cantidadInicial: number;
+  origen?: string;
 };
 
 const PROVINCIAS = [
@@ -35,7 +36,7 @@ const PROVINCIAS = [
   "Tucumán",
 ];
 
-export default function CheckoutForm({ producto, cantidadInicial }: Props) {
+export default function CheckoutForm({ producto, cantidadInicial, origen }: Props) {
   const [cantidad, setCantidad] = useState(cantidadInicial);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +49,7 @@ export default function CheckoutForm({ producto, cantidadInicial }: Props) {
     const formData = new FormData(e.currentTarget);
     const payload = Object.fromEntries(formData.entries());
     payload.cantidad = String(cantidad);
+    if (origen) payload.origen = origen;
 
     try {
       const res = await fetch("/api/checkout", {

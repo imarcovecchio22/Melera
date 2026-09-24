@@ -9,9 +9,10 @@ export const dynamic = "force-dynamic";
 export default async function CheckoutPage({
   searchParams,
 }: {
-  searchParams: { cantidad?: string };
+  searchParams: { cantidad?: string; origen?: string | string[] };
 }) {
   const product = await getMainProduct();
+  const origen = Array.isArray(searchParams.origen) ? searchParams.origen[0] : searchParams.origen;
   const cantidadInicial = Math.max(
     1,
     Math.min(product.stock || 1, Number(searchParams.cantidad) || 1)
@@ -27,6 +28,7 @@ export default async function CheckoutPage({
         <CheckoutForm
           producto={{ nombre: product.nombre, precio: product.precio }}
           cantidadInicial={cantidadInicial}
+          origen={origen}
         />
       </main>
       <Footer />

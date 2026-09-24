@@ -15,7 +15,7 @@ export default async function AdminPedidosPage() {
       <p className="mt-1 text-sm text-stone-500">{pedidos.length} pedidos en total</p>
 
       <div className="mt-6 overflow-x-auto rounded-xl border border-miel-100 bg-white shadow-soft">
-        <table className="w-full min-w-[800px] text-left text-sm">
+        <table className="w-full min-w-[880px] text-left text-sm">
           <thead className="border-b border-miel-100 bg-miel-50/60 text-stone-600">
             <tr>
               <th className="px-4 py-3 font-semibold">N°</th>
@@ -25,6 +25,7 @@ export default async function AdminPedidosPage() {
               <th className="px-4 py-3 font-semibold">Cant.</th>
               <th className="px-4 py-3 font-semibold">Total</th>
               <th className="px-4 py-3 font-semibold">Estado</th>
+              <th className="px-4 py-3 font-semibold">Origen</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -49,6 +50,7 @@ export default async function AdminPedidosPage() {
                     {ESTADOS_LABEL[p.estado]}
                   </span>
                 </td>
+                <td className="px-4 py-3 text-stone-500">{p.origen ?? "directo"}</td>
                 <td className="px-4 py-3 text-right">
                   <Link href={`/admin/pedidos/${p.id}`} className="text-miel-700 hover:underline">
                     Ver
@@ -59,7 +61,7 @@ export default async function AdminPedidosPage() {
 
             {pedidos.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-stone-400">
+                <td colSpan={9} className="px-4 py-10 text-center text-stone-400">
                   Todavía no hay pedidos.
                 </td>
               </tr>

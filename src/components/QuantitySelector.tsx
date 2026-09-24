@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function QuantitySelector({ stock }: { stock: number }) {
+export default function QuantitySelector({ stock, origen }: { stock: number; origen?: string }) {
   const [cantidad, setCantidad] = useState(1);
   const router = useRouter();
 
@@ -18,7 +18,9 @@ export default function QuantitySelector({ stock }: { stock: number }) {
   }
 
   function comprar() {
-    router.push(`/checkout?cantidad=${cantidad}`);
+    const params = new URLSearchParams({ cantidad: String(cantidad) });
+    if (origen) params.set("origen", origen);
+    router.push(`/checkout?${params}`);
   }
 
   if (sinStock) {

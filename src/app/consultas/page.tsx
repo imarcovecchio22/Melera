@@ -90,7 +90,9 @@ export default async function ConsultasPage({
 
           <p className="mt-8 text-center text-stone-600">
             ¿Ya sabés lo que querés?{" "}
-            <Link href="/producto" className="font-semibold text-miel-700 underline underline-offset-4">
+            <Link
+              href={origen ? `/producto?origen=${encodeURIComponent(origen)}` : "/producto"}
+              className="font-semibold text-miel-700 underline underline-offset-4">
               Comprá directo acá
             </Link>
           </p>

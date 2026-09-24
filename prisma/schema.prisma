@@ -59,6 +59,9 @@ model Order {
   mpPaymentId String?
   mpPreferenceId String?
 
+  // ?origen= con el que llegó a /producto (ej: "instagram" desde ManyChat)
+  origen String?
+
   @@index([estado])
   @@index([mpPreferenceId])
 }

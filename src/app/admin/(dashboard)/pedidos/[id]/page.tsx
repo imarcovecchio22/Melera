@@ -32,7 +32,9 @@ export default async function AdminPedidoDetallePage({
           <OrderStatusSelect orderId={pedido.id} estadoActual={pedido.estado} />
         </div>
       </div>
-      <p className="mt-1 text-sm text-stone-500">{formatFecha(pedido.createdAt)}</p>
+      <p className="mt-1 text-sm text-stone-500">
+        {formatFecha(pedido.createdAt)} · origen: {pedido.origen ?? "directo"}
+      </p>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2">
         <div className="rounded-xl border border-miel-100 bg-white p-6 shadow-soft">
