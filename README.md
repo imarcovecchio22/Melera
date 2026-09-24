@@ -95,6 +95,16 @@ Ver `.env.example` para el detalle completo.
 - **Código:** `src/lib/instagram/`. Los errores quedan en `/admin/logs?tipo=instagram` y llegan por Telegram.
 - **Previews:** el cron solo corre en producción. Para probar los botones en una preview, activar *Protection Bypass for Automation* en Vercel y usar `IG_DRY_RUN=true`.
 
+## Diseño del panal (páginas públicas)
+
+- **Referencia:** el prototipo aprobado `docs/melera-panal-prototipo.html`. Los valores ajustables (radio de huida, velocidades, gotas, luz, parallax, duración de la entrada) están en `src/components/panal/config.ts`.
+- **Dónde va:** `/`, `/producto`, `/consultas` y `/privacidad` comparten el layout `src/app/(publico)/layout.tsx` (Header, Footer, fondo de panal y abeja). `/checkout` tiene su layout con la misma paleta, fondo oscuro liso y sin animación. El admin no cambia.
+- **Código:** `components/panal/dibujo.ts` (capas y entrada), `abeja.ts` (abeja y gotas), `motor.ts` (un solo `requestAnimationFrame`, pausa con la pestaña oculta, DPR hasta 2), `Panal.tsx` (se carga con `dynamic(ssr: false)`). Los botones que la abeja esquiva llevan `data-bee-avoid`.
+- **Entrada:** solo en la home, una vez por sesión (`sessionStorage`), con "Saltar" y Esc. Para que no parpadee, un script mínimo marca `<html data-entrada>` antes de pintar y un velo CSS muestra el primer cuadro hasta que carga el canvas.
+- **Reducir movimiento:** sin entrada, fondo quieto y sin abeja.
+- **Estilos:** paleta como variables CSS (`--wax`, `--honey`, `--glow`…) y clases públicas propias (`.btn-panal`, `.btn-ghost`, `.campo-panal`, `.tarjeta-panal`, `.velo-texto`), separadas de las del admin.
+- **Rendimiento:** la foto del frasco es el LCP. `<FotoFrasco lcp />` la pide enseguida y con prioridad alta (en Next 16, `priority` quedó obsoleto). No cargar imágenes en el velo con `<img>`: se descargan aunque estén ocultas; por eso el logo va como fondo CSS.
+
 ## Respuestas automáticas
 
 - **Configuración en Meta:** paso a paso en [`docs/instagram-setup.md`](docs/instagram-setup.md), incluido el orden para dejar ManyChat sin respuestas dobles.

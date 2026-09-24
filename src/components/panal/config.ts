@@ -19,5 +19,11 @@ export const PANAL = {
   introDur: 1.9,
 } as const;
 
+/**
+ * Logo de la entrada, optimizado por Next (el PNG original pesa 165 KB). Lo usan el velo CSS
+ * y el canvas: es la misma URL, así que se descarga una sola vez y solo cuando hay entrada.
+ */
+export const LOGO_ENTRADA_URL = "/_next/image?url=%2Fbrand%2Fmelera-logo.png&w=384&q=75";
+
 /** Clave de sessionStorage: la entrada se ve una vez por sesión. */
 export const ENTRADA_VISTA_KEY = "melera-entrada-vista";

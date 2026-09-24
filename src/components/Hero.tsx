@@ -10,7 +10,7 @@ export default function Hero({ precio }: { precio: number }) {
     >
       {/* Mobile: la foto arriba del título (hasta 34svh). Escritorio: a la derecha, grande. */}
       <FotoFrasco
-        priority
+        lcp
         sizes="(min-width: 1024px) 460px, 260px"
         className="lg:order-2"
         imgClassName="h-[34svh] w-auto lg:h-[min(68svh,600px)]"

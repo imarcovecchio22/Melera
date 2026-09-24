@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ENTRADA_VISTA_KEY } from "@/components/panal/config";
+import { ENTRADA_VISTA_KEY, LOGO_ENTRADA_URL } from "@/components/panal/config";
 import { MotorPanal } from "@/components/panal/motor";
 import { Abeja } from "@/components/panal/abeja";
 import { quitarVeloEntrada } from "@/components/panal/velo";
@@ -32,20 +32,22 @@ export default function Panal() {
   const fondo = useRef<HTMLCanvasElement>(null);
   const efectos = useRef<HTMLCanvasElement>(null);
   const motor = useRef<MotorPanal | null>(null);
+  const logo = useRef<HTMLImageElement | null>(null);
   const [saltarVisible, setSaltarVisible] = useState(false);
   const pathname = usePathname();
   const esHome = pathname === "/";
 
   useEffect(() => {
     if (!fondo.current || !efectos.current) return;
-    const logo = new Image();
-    logo.src = "/brand/melera-logo.png";
     const entrada = esHome && !entradaYaVista();
+    // El logo solo se pide si hay entrada (misma URL que el velo: ya está en caché)
+    logo.current = new Image();
+    if (entrada) logo.current.src = LOGO_ENTRADA_URL;
     const m = new MotorPanal({
       fondo: fondo.current,
       efectos: efectos.current,
       entrada,
-      logoEntrada: logo,
+      logoEntrada: logo.current,
       actor: new Abeja(),
       onEntrada: (activa) => {
         setSaltarVisible(activa);
@@ -72,7 +74,10 @@ export default function Panal() {
   useEffect(() => {
     if (pathname === primeraRuta.current) return;
     primeraRuta.current = pathname;
-    if (esHome && !entradaYaVista()) motor.current?.reproducirEntrada();
+    if (esHome && !entradaYaVista()) {
+      if (logo.current && !logo.current.src) logo.current.src = LOGO_ENTRADA_URL;
+      motor.current?.reproducirEntrada();
+    }
     else motor.current?.terminarEntrada();
   }, [pathname, esHome]);
 
