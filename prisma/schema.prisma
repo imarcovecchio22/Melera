@@ -111,3 +111,65 @@ model EventLog {
   @@index([nivel, createdAt])
   @@index([tipo, createdAt])
 }
+
+enum TipoPostIG {
+  presentacion
+  producto
+  dato
+}
+
+enum EstiloPostIG {
+  organico
+  geo
+}
+
+enum EstadoPostIG {
+  pendiente
+  generando
+  esperando_aprobacion
+  publicando
+  publicado
+  descartado
+  error
+}
+
+enum DestinoPostIG {
+  feed
+  story
+  both
+}
+
+// Cronograma de Instagram (reemplaza la Google Sheet "Cronograma" y los escenarios de Make)
+model PostIG {
+  id     Int          @id @default(autoincrement())
+  fecha  DateTime     @db.Date // día desde el que se puede generar
+  tipo   TipoPostIG
+  estilo EstiloPostIG
+  tema   String
+
+  // Solo para tipo producto (datos reales que carga el admin)
+  nombreProducto String?
+  categoria      String?
+  precio         String?
+  presentacion   String?
+  imagenUrl      String?
+
+  estado  EstadoPostIG @default(pendiente)
+  copy    Json? // textos que escribió Gemini (tagline, titulo, etc.)
+  caption String?
+  feedUrl  String?
+  storyUrl String?
+
+  destino           DestinoPostIG?
+  feedMediaId       String?
+  storyMediaId      String?
+  telegramMessageId Int?
+  error             String?
+
+  generadoEn  DateTime?
+  publicadoEn DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([estado, fecha])
+}

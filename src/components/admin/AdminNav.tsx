@@ -8,6 +8,7 @@ const links = [
   { href: "/admin/pedidos", label: "Pedidos" },
   { href: "/admin/stock", label: "Stock" },
   { href: "/admin/consultas", label: "Consultas" },
+  { href: "/admin/instagram", label: "Instagram" },
   { href: "/admin/logs", label: "Logs" },
 ];
 
@@ -23,12 +24,12 @@ export default function AdminNav() {
 
   return (
     <header className="border-b border-miel-100 bg-white">
-      <div className="container-melera flex h-16 items-center justify-between">
+      <div className="container-melera flex min-h-16 flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
         <Link href="/admin/pedidos" className="flex items-center gap-2 font-serif text-xl font-semibold text-miel-700">
           <Image src="/brand/melera-logo.png" alt="" width={32} height={32} />
           Melera · Admin
         </Link>
-        <nav className="flex items-center gap-6 text-sm font-medium text-stone-600">
+        <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-stone-600">
           {links.map((link) => (
             <Link
               key={link.href}

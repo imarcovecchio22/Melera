@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { esUrlPublicaHttps } from "@/lib/urls";
 
 export const checkoutSchema = z.object({
   nombre: z.string().trim().min(1, "Ingresá tu nombre"),
@@ -77,3 +78,40 @@ export const consultaSchema = z
   });
 
 export type ConsultaInput = z.infer<typeof consultaSchema>;
+
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Post del cronograma de Instagram cargado desde el admin. */
+export const postIGSchema = z
+  .object({
+    fecha: z
+      .string()
+      .regex(FECHA, "La fecha tiene que tener el formato AAAA-MM-DD")
+      .refine((v) => !Number.isNaN(Date.parse(`${v}T00:00:00Z`)), "Fecha inválida"),
+    tipo: z.enum(["presentacion", "producto", "dato"], {
+      errorMap: () => ({ message: "Elegí el tipo de post" }),
+    }),
+    estilo: z.enum(["organico", "geo"], { errorMap: () => ({ message: "Elegí el estilo" }) }),
+    tema: z
+      .string()
+      .trim()
+      .min(3, "Escribí el tema del post (mínimo 3 caracteres)")
+      .max(300, "El tema puede tener hasta 300 caracteres"),
+    nombreProducto: z.string().trim().max(80, "El nombre puede tener hasta 80 caracteres").optional().default(""),
+    categoria: z.string().trim().max(60).optional().default(""),
+    precio: z.string().trim().max(20, "El precio puede tener hasta 20 caracteres").optional().default(""),
+    presentacion: z.string().trim().max(60).optional().default(""),
+    imagenUrl: z.string().trim().max(500).optional().default(""),
+  })
+  .superRefine((data, ctx) => {
+    if (data.tipo !== "producto") return;
+    if (!data.nombreProducto) ctx.addIssue({ code: "custom", path: ["nombreProducto"], message: "Falta el nombre del producto" });
+    if (!data.precio) ctx.addIssue({ code: "custom", path: ["precio"], message: "Falta el precio" });
+    if (!data.imagenUrl) {
+      ctx.addIssue({ code: "custom", path: ["imagenUrl"], message: "Falta la foto del producto" });
+    } else if (!esUrlPublicaHttps(data.imagenUrl)) {
+      ctx.addIssue({ code: "custom", path: ["imagenUrl"], message: "La foto tiene que ser un link https público" });
+    }
+  });
+
+export type PostIGInput = z.infer<typeof postIGSchema>;

@@ -21,6 +21,7 @@
     "@google/genai": "^2.23.0",
     "@prisma/client": "^5.20.0",
     "@sparticuz/chromium": "^153.0.0",
+    "@vercel/functions": "^3.9.9",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.6.1",
     "jose": "^5.9.6",
