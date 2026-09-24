@@ -32,7 +32,7 @@ export default async function ConsultasPage({
         <>
           Por ahora enviamos solo dentro de CABA, y el envío lo coordinamos con vos después de la
           compra. Pronto vamos a sumar más zonas: si estás en otro lugar,{" "}
-          <a href="#escribinos" className="font-semibold text-miel-700 underline underline-offset-4">
+          <a href="#escribinos" className="font-semibold text-[var(--glow)] underline underline-offset-4">
             escribinos acá abajo
           </a>{" "}
           y te avisamos.
@@ -57,48 +57,50 @@ export default async function ConsultasPage({
 
   return (
     <>
-      <main className="flex-1 container-melera py-10 sm:py-16">
+      <main className="contenedor-panal flex-1 py-10 sm:py-16">
         <div className="mx-auto max-w-2xl">
-          <h1 className="section-title">¿Tenés alguna consulta?</h1>
-          <p className="mt-3 text-stone-600">
-            Mirá si tu duda ya está respondida acá abajo. Si no, escribinos y te contestamos a la
-            brevedad.
-          </p>
+          <div className="velo-texto">
+            <h1 className="titulo-panal">¿Tenés alguna consulta?</h1>
+            <p className="mt-3 texto-suave">
+              Mirá si tu duda ya está respondida acá abajo. Si no, escribinos y te contestamos a la
+              brevedad.
+            </p>
+          </div>
 
           <section aria-labelledby="faq" className="mt-8">
-            <h2 id="faq" className="font-serif text-xl font-semibold text-marron">
+            <h2 id="faq" className="font-serif text-xl font-semibold text-[var(--ink)]">
               Preguntas frecuentes
             </h2>
-            <div className="mt-4 divide-y divide-miel-100 rounded-2xl border border-miel-100 bg-white">
+            <div className="mt-4 divide-y divide-[rgba(234,162,28,0.18)] tarjeta-panal">
               {preguntas.map((p) => (
                 <details key={p.pregunta} className="group">
-                  <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 font-medium text-marron [&::-webkit-details-marker]:hidden">
+                  <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 font-medium text-[var(--ink)] [&::-webkit-details-marker]:hidden">
                     {p.pregunta}
                     <span
-                      className="shrink-0 text-xl text-miel-600 transition group-open:rotate-45"
+                      className="shrink-0 text-xl text-[var(--honey)] transition group-open:rotate-45"
                       aria-hidden
                     >
                       +
                     </span>
                   </summary>
-                  <p className="px-5 pb-4 leading-relaxed text-stone-600">{p.respuesta}</p>
+                  <p className="px-5 pb-4 leading-relaxed texto-suave">{p.respuesta}</p>
                 </details>
               ))}
             </div>
           </section>
 
           <section id="escribinos" aria-labelledby="escribinos-titulo" className="mt-10 scroll-mt-20">
-            <h2 id="escribinos-titulo" className="mb-4 font-serif text-xl font-semibold text-marron">
+            <h2 id="escribinos-titulo" className="mb-4 font-serif text-xl font-semibold text-[var(--ink)]">
               Escribinos
             </h2>
             <ConsultaForm origen={origen} />
           </section>
 
-          <p className="mt-8 text-center text-stone-600">
+          <p className="mt-8 text-center texto-suave">
             ¿Ya sabés lo que querés?{" "}
             <Link
               href={origen ? `/producto?origen=${encodeURIComponent(origen)}` : "/producto"}
-              className="font-semibold text-miel-700 underline underline-offset-4">
+              className="font-semibold text-[var(--glow)] underline underline-offset-4">
               Comprá directo acá
             </Link>
           </p>

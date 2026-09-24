@@ -157,6 +157,7 @@
   }
 
   .titulo-panal {
+    color: var(--ink);
     font-family: var(--font-fraunces), Georgia, serif;
     font-weight: 500;
     font-size: clamp(1.8rem, 3.4vw, 2.7rem);

@@ -1,5 +1,3 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 import CheckoutForm from "@/components/CheckoutForm";
 import { getMainProduct } from "@/lib/product";
@@ -21,9 +19,8 @@ export default async function CheckoutPage({
 
   return (
     <>
-      <Header />
-      <main className="flex-1 container-melera py-12 sm:py-16">
-        <h1 className="mb-8 font-serif text-3xl font-semibold text-marron sm:text-4xl">
+      <main className="contenedor-panal flex-1 py-12 sm:py-16">
+        <h1 className="mb-8 font-serif text-3xl font-semibold text-[var(--ink)] sm:text-4xl">
           Finalizar compra
         </h1>
         <CheckoutForm
@@ -32,7 +29,6 @@ export default async function CheckoutPage({
           origen={origen}
         />
       </main>
-      <Footer />
       <ChatWidget />
     </>
   );
