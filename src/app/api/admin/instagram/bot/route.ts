@@ -24,7 +24,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const url = `${req.nextUrl.origin}/api/telegram/webhook`;
+  // En las previews protegidas de Vercel, Telegram necesita la clave de bypass para poder entrar.
+  const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  const url = `${req.nextUrl.origin}/api/telegram/webhook${
+    bypass && process.env.VERCEL_ENV !== "production" ? `?x-vercel-protection-bypass=${encodeURIComponent(bypass)}` : ""
+  }`;
   try {
     await telegramApi("setWebhook", {
       url,
@@ -35,6 +39,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     return NextResponse.json({ error: errorMessage(error) }, { status: 502 });
   }
-  await logEvent("admin", `Bot de Telegram conectado a ${url}`);
-  return NextResponse.json({ url });
+  const sinClave = url.split("?")[0];
+  await logEvent("admin", `Bot de Telegram conectado a ${sinClave}`);
+  return NextResponse.json({ url: sinClave });
 }
