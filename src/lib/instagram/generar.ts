@@ -6,7 +6,8 @@ import { sendTelegramMessage, sendTelegramPhoto, siteUrl } from "@/lib/telegram"
 import { generarCopy, type CopyIG } from "@/lib/instagram/copy";
 import { botonesPost, hoyArgentina } from "@/lib/instagram/botones";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// Módulo CommonJS compartido con las plantillas (melera-templates/generate.js)
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { buildImageUrls } = require("../../../melera-templates/generate");
 
 // Cuántos posts se generan por corrida (cada uno tarda ~10-20 s; la función tiene 60 s).

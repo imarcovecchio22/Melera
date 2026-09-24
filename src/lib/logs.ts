@@ -1,9 +1,9 @@
 import type { LogNivel, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
-export type LogTipo = "pedido" | "pago" | "consulta" | "telegram" | "admin" | "imagen" | "instagram";
+export type LogTipo = "pedido" | "pago" | "consulta" | "telegram" | "admin" | "imagen" | "instagram" | "chat";
 
-export const LOG_TIPOS: LogTipo[] = ["pedido", "pago", "consulta", "telegram", "admin", "imagen", "instagram"];
+export const LOG_TIPOS: LogTipo[] = ["pedido", "pago", "consulta", "telegram", "admin", "imagen", "instagram", "chat"];
 
 // Los eventos más viejos que esto se borran al abrir /admin/logs.
 export const LOG_RETENCION_DIAS = 90;

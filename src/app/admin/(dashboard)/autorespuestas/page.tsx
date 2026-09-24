@@ -1,6 +1,6 @@
 import type { AccionEventoIG, AutoRespuesta } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { formatFecha, formatPrecio } from "@/lib/utils";
+import { formatFecha, formatPrecio, haceMs } from "@/lib/utils";
 import { getMainProduct } from "@/lib/product";
 import { siteUrl } from "@/lib/telegram";
 import { leerBotones } from "@/lib/instagram/reglas";
@@ -61,7 +61,7 @@ export default async function AdminAutoRespuestasPage() {
   ]);
 
   // Cuentas a las que todavía les bloquea el límite: el botón va solo en su evento más reciente.
-  const desdeLimite = new Date(Date.now() - HORAS_ENTRE_RESPUESTAS * 3_600_000);
+  const desdeLimite = haceMs(HORAS_ENTRE_RESPUESTAS * 3_600_000);
   const conBoton = new Set<number>();
   const vistas = new Set<string>();
   for (const e of eventos) {

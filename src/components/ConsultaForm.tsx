@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Canal = "instagram" | "email";
 
@@ -14,8 +14,12 @@ export default function ConsultaForm({ origen }: { origen?: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enviadoPor, setEnviadoPor] = useState<{ canal: Canal; contacto: string } | null>(null);
-  // ms desde que se abrió el formulario (anti-spam: un bot lo completa al instante)
-  const abiertoEn = useRef(Date.now());
+  // Cuándo se abrió el formulario (anti-spam: un bot lo completa al instante).
+  // Se toma al montar y no durante el render, que tiene que ser puro.
+  const abiertoEn = useRef(0);
+  useEffect(() => {
+    abiertoEn.current = Date.now();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

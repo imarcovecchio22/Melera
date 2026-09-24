@@ -4,13 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { autoRespuestaSchema } from "@/lib/validation";
 import { logEvent } from "@/lib/logs";
 
-type Contexto = { params: { id: string } };
+type Contexto = { params: Promise<{ id: string }> };
 
 const soloActivaSchema = z.object({ activa: z.boolean() });
 
 // Edita una regla completa, o solo la activa/desactiva si el body es { activa }.
 export async function PATCH(req: NextRequest, { params }: Contexto) {
-  const id = Number(params.id);
+  const id = Number((await params).id);
   const body = await req.json().catch(() => null);
   if (!Number.isInteger(id)) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
 
@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: Contexto) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Contexto) {
-  const id = Number(params.id);
+  const id = Number((await params).id);
   if (!Number.isInteger(id)) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
 
   try {

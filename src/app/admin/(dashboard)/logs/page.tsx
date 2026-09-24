@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { LogNivel, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { formatFecha } from "@/lib/utils";
+import { formatFecha, haceMs } from "@/lib/utils";
 import { LOG_RETENCION_DIAS, LOG_TIPOS } from "@/lib/logs";
 
 export const dynamic = "force-dynamic";
@@ -22,10 +22,11 @@ function uno(value?: string | string[]) {
 }
 
 export default async function AdminLogsPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: { [K in keyof SearchParams]?: string | string[] };
+  searchParams: Promise<{ [K in keyof SearchParams]?: string | string[] }>;
 }) {
+  const searchParams = await searchParamsPromise;
   const filtros: SearchParams = {
     nivel: uno(searchParams.nivel),
     tipo: uno(searchParams.tipo),
@@ -38,7 +39,7 @@ export default async function AdminLogsPage({
 
   // Limpieza: se borran los eventos más viejos que la retención.
   await prisma.eventLog.deleteMany({
-    where: { createdAt: { lt: new Date(Date.now() - LOG_RETENCION_DIAS * 24 * 60 * 60 * 1000) } },
+    where: { createdAt: { lt: haceMs(LOG_RETENCION_DIAS * 24 * 60 * 60 * 1000) } },
   });
 
   const where: Prisma.EventLogWhereInput = {
@@ -56,7 +57,7 @@ export default async function AdminLogsPage({
     }),
     prisma.eventLog.count({ where }),
     prisma.eventLog.count({
-      where: { nivel: "error", createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+      where: { nivel: "error", createdAt: { gte: haceMs(24 * 60 * 60 * 1000) } },
     }),
   ]);
   const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));

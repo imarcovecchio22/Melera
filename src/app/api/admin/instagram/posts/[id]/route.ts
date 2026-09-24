@@ -9,7 +9,8 @@ const accionSchema = z.object({ accion: z.enum(["editar", "reintentar", "elimina
 // Estados en los que un post todavía se puede editar o borrar.
 const EDITABLES = ["pendiente", "error", "descartado"] as const;
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
   const id = Number(params.id);
   const body = await req.json().catch(() => null);
   const accion = accionSchema.safeParse(body);

@@ -7,10 +7,11 @@ import { getMainProduct } from "@/lib/product";
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: { cantidad?: string; origen?: string | string[] };
+  searchParams: Promise<{ cantidad?: string; origen?: string | string[] }>;
 }) {
+  const searchParams = await searchParamsPromise;
   const product = await getMainProduct();
   const origen = Array.isArray(searchParams.origen) ? searchParams.origen[0] : searchParams.origen;
   const cantidadInicial = Math.max(

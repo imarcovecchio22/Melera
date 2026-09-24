@@ -4,7 +4,7 @@ Tienda online de miel artesanal — landing, ficha de producto, checkout con Mer
 
 ## Stack
 
-- [Next.js 14](https://nextjs.org/) (App Router) + TypeScript
+- [Next.js 16](https://nextjs.org/) (App Router, Turbopack) + React 19 + TypeScript
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Prisma](https://www.prisma.io/) ORM + PostgreSQL ([Neon](https://neon.tech/) en producción)
 - [MercadoPago Checkout Pro](https://www.mercadopago.com.ar/developers)
@@ -68,7 +68,7 @@ npm run dev                  # http://localhost:3000
 | `IG_DRY_RUN` | `true` = hace todo menos publicar en Instagram (para probar) |
 | `GEMINI_COPY_MODEL` | Opcional: modelo de Gemini para los textos (por defecto `gemini-flash-lite-latest`) |
 
-`NEXTAUTH_SECRET` es obligatoria en producción: sin ella el login de `/admin` falla después de validar usuario y contraseña (el middleware tampoco puede verificar la sesión). Después de cargar o cambiar una variable en Vercel hay que hacer **Redeploy**: los deploys que ya existen no la toman.
+`NEXTAUTH_SECRET` es obligatoria en producción: sin ella el login de `/admin` falla después de validar usuario y contraseña (el proxy, `src/proxy.ts`, tampoco puede verificar la sesión). Después de cargar o cambiar una variable en Vercel hay que hacer **Redeploy**: los deploys que ya existen no la toman.
 
 Ver `.env.example` para el detalle completo.
 
@@ -78,6 +78,7 @@ Ver `.env.example` para el detalle completo.
 |---|---|
 | `npm run dev` | Servidor de desarrollo |
 | `npm test` | Pruebas automáticas (vitest, carpeta `tests/`) |
+| `npm run lint` | ESLint (`eslint.config.mjs`, reglas de Next + TypeScript) |
 | `npm run build` | `prisma generate` + build de producción |
 | `npm start` | Levanta el build de producción |
 | `npx prisma migrate dev --name <nombre>` | Crea una migración nueva a partir de cambios en `schema.prisma` (contra una base de desarrollo) |
@@ -105,10 +106,17 @@ Ver `.env.example` para el detalle completo.
 ## Seguridad
 
 - Login del admin: comparación de claves resistente a ataques de tiempo y bloqueo de 15 min tras 5 intentos fallidos por IP.
-- `/api/admin/*` rechaza cambios que vengan de otro origen (CSRF). Headers de seguridad en todo el sitio.
-- Límites: 5 consultas por IP cada 10 min; largo máximo de los mensajes del chat.
+- `/api/admin/*` rechaza cambios que vengan de otro origen (CSRF). Headers de seguridad en todo el sitio, incluida una Content Security Policy (`next.config.js`: solo recursos propios; en previews también permite la barra de Vercel).
+- Límites: 5 consultas por IP cada 10 min; chat: 20 mensajes por IP cada 10 min (se registran en `/admin/logs?tipo=chat`, solo la IP) y largo máximo por mensaje.
 - Las URLs que carga el servidor (fotos de producto) tienen que ser https públicas. Al dibujar imágenes, Chromium solo puede cargar fuentes de Google e imágenes https públicas.
-- Pendiente: pasar a Next.js 16 (Next 14.2 tiene avisos de seguridad que solo se corrigen en la 16) y actualizar `mercadopago`.
+- Dependencias al día (Next 16, React 19, `mercadopago` 3, vitest 5): `npm audit` sin vulnerabilidades al 2026-09-24.
+
+### Notas de Next.js 16
+
+- El middleware se llama **proxy** (`src/proxy.ts`, función `proxy`) y corre en Node.
+- `params`, `searchParams`, `cookies()` y `headers()` son asíncronos: siempre con `await`.
+- `next lint` ya no existe: se usa `npm run lint` (ESLint directo). `next build` no corre el lint.
+- En `outputFileTracingIncludes` las claves son globs: una ruta con corchetes (`[formato]`) no coincide literal, por eso la de imágenes usa `/api/img/**`. Sin eso, Chromium no se incluye en la función y las imágenes de Instagram fallan en Vercel.
 
 ## Base de datos
 

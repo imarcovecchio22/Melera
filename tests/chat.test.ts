@@ -1,0 +1,55 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const sec = vi.hoisted(() => ({ demasiadosIntentos: vi.fn(async () => false) }));
+vi.mock("@/lib/security", () => ({ clientIp: () => "1.2.3.4", demasiadosIntentos: sec.demasiadosIntentos }));
+
+const logs = vi.hoisted(() => ({ logEvent: vi.fn(async () => {}) }));
+vi.mock("@/lib/logs", () => logs);
+
+const gemini = vi.hoisted(() => ({ generateContentStream: vi.fn() }));
+vi.mock("@google/genai", () => ({
+  GoogleGenAI: class {
+    models = gemini;
+  },
+}));
+
+import { POST } from "@/app/api/chat/route";
+
+const pedido = (messages: unknown) =>
+  new Request("https://melera.vercel.app/api/chat", { method: "POST", body: JSON.stringify({ messages }) });
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  process.env.GEMINI_API_KEY = "clave-de-prueba";
+  gemini.generateContentStream.mockResolvedValue(
+    (async function* () {
+      yield { text: "¡Hola!" };
+    })()
+  );
+});
+
+describe("/api/chat", () => {
+  it("responde y registra solo la IP del mensaje", async () => {
+    const res = await POST(pedido([{ role: "user", content: "hola" }]));
+    expect(res.status).toBe(200);
+    expect(await res.text()).toContain("¡Hola!");
+    expect(logs.logEvent).toHaveBeenCalledWith("chat", "Mensaje al chat", { detalle: { ip: "1.2.3.4" } });
+  });
+
+  it("con demasiados mensajes de la misma IP corta con 429 sin llamar a Gemini", async () => {
+    sec.demasiadosIntentos.mockResolvedValueOnce(true);
+    const res = await POST(pedido([{ role: "user", content: "hola" }]));
+    expect(res.status).toBe(429);
+    expect(await res.text()).toContain("Esperá unos minutos");
+    expect(gemini.generateContentStream).not.toHaveBeenCalled();
+    expect(sec.demasiadosIntentos).toHaveBeenCalledWith(
+      expect.objectContaining({ tipo: "chat", ip: "1.2.3.4", maximo: 20, ventanaMinutos: 10 })
+    );
+  });
+
+  it("rechaza pedidos inválidos antes de contar", async () => {
+    expect((await POST(pedido("no es una lista"))).status).toBe(400);
+    expect((await POST(pedido([{ role: "system", content: "x" }]))).status).toBe(400);
+    expect(sec.demasiadosIntentos).not.toHaveBeenCalled();
+  });
+});

@@ -6,6 +6,11 @@ export function formatPrecio(centavos: number) {
   }).format(centavos);
 }
 
+/** Fecha de hace `ms` milisegundos (para filtros "últimas 24 h", ventanas, etc.). */
+export function haceMs(ms: number) {
+  return new Date(Date.now() - ms);
+}
+
 export function formatFecha(fecha: Date | string) {
   return new Intl.DateTimeFormat("es-AR", {
     dateStyle: "short",

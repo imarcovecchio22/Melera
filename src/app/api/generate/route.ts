@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const {
-  buildImageUrls,
-  ValidationError,
-} = require("../../../../melera-templates/generate");
+// Módulo CommonJS compartido con las plantillas (melera-templates/generate.js)
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const generate = require("../../../../melera-templates/generate");
+const { buildImageUrls, ValidationError } = generate;
 import { errorMessage, logEvent } from "@/lib/logs";
 import { esUrlPublicaHttps, safeEqual } from "@/lib/security";
 
@@ -30,8 +29,8 @@ async function checkImage(url: string): Promise<string | null> {
     if (!res.ok) return `respondió ${res.status}`;
     if (!type.startsWith("image/")) return `es ${type.split(";")[0] || "otro tipo de archivo"}, no una imagen`;
     return null;
-  } catch (error: any) {
-    return `no se pudo abrir: ${error?.message}`;
+  } catch (error) {
+    return `no se pudo abrir: ${errorMessage(error)}`;
   }
 }
 
@@ -87,28 +86,28 @@ export async function POST(req: NextRequest) {
   let urls: { image_url: string; story_image_url: string };
   try {
     urls = buildImageUrls(body, baseUrl);
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof ValidationError) {
-      await logEvent("imagen", `Post ${body.tipo}/${body.estilo} del ${body.fecha}: ${error.message}`, {
+      await logEvent("imagen", `Post ${body.tipo}/${body.estilo} del ${body.fecha}: ${errorMessage(error)}`, {
         nivel: "warn",
       });
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: errorMessage(error) }, { status: 400 });
     }
     await logEvent("imagen", "Error armando las URLs de imagen", {
       nivel: "error",
       detalle: { error: errorMessage(error) },
     });
-    return NextResponse.json({ error: `Error interno: ${error?.message}` }, { status: 500 });
+    return NextResponse.json({ error: `Error interno: ${errorMessage(error)}` }, { status: 500 });
   }
 
   try {
     await Promise.all([warmImage(urls.image_url), warmImage(urls.story_image_url)]);
-  } catch (error: any) {
+  } catch (error) {
     await logEvent("imagen", `Post ${body.tipo}/${body.estilo} del ${body.fecha}: falló el render`, {
       nivel: "error",
       detalle: { error: errorMessage(error) },
     });
-    return NextResponse.json({ error: error.message }, { status: 502 });
+    return NextResponse.json({ error: errorMessage(error) }, { status: 502 });
   }
 
   await logEvent("imagen", `Post ${body.tipo}/${body.estilo} del ${body.fecha} generado`, {

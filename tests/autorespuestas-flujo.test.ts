@@ -18,7 +18,7 @@ const ig = vi.hoisted(() => ({
 vi.mock("@/lib/instagram/mensajes", () => ig);
 
 const tg = vi.hoisted(() => ({
-  sendTelegramMessage: vi.fn(async (_texto: string) => true),
+  sendTelegramMessage: vi.fn(async (texto: string) => texto.length > 0),
   siteUrl: () => "https://melera.vercel.app",
 }));
 vi.mock("@/lib/telegram", () => tg);

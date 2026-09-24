@@ -7,10 +7,11 @@ import OrderStatusSelect from "@/components/admin/OrderStatusSelect";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPedidoDetallePage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const params = await paramsPromise;
   const pedido = await prisma.order.findUnique({
     where: { id: params.id },
     include: { product: true },

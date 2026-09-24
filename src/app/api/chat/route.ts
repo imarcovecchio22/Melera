@@ -1,4 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
+import { logEvent } from "@/lib/logs";
+import { clientIp, demasiadosIntentos } from "@/lib/security";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,6 +10,9 @@ const MAX_TURNS = 20;
 // Evita que alguien gaste la cuota de Gemini mandando textos enormes.
 const MAX_CHARS_POR_MENSAJE = 1000;
 const MAX_CHARS_TOTAL = 8000;
+// Límite por IP para que nadie gaste la cuota gratis de Gemini a propósito.
+const MAX_MENSAJES_POR_IP = 20;
+const VENTANA_MINUTOS = 10;
 
 function buildSystemPrompt() {
   const whatsapp = process.env.WHATSAPP_NUMBER;
@@ -63,6 +68,24 @@ export async function POST(req: Request) {
     return new Response("Solicitud inválida.", { status: 400 });
   }
 
+  const ip = clientIp(req);
+  if (
+    await demasiadosIntentos({
+      tipo: "chat",
+      mensajeEmpiezaCon: "Mensaje al chat",
+      ip,
+      maximo: MAX_MENSAJES_POR_IP,
+      ventanaMinutos: VENTANA_MINUTOS,
+    })
+  ) {
+    return new Response(
+      "Recibimos muchos mensajes seguidos. Esperá unos minutos o escribinos por WhatsApp.",
+      { status: 429 }
+    );
+  }
+  // Solo la IP (no el texto): sirve para contar mensajes y ver el uso en /admin/logs?tipo=chat.
+  await logEvent("chat", "Mensaje al chat", { detalle: { ip } });
+
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   const contents = messages.map((m) => ({
@@ -86,10 +109,14 @@ export async function POST(req: Request) {
         controller.close();
       } catch (err) {
         console.error("Error en /api/chat:", err);
-        controller.enqueue(
-          encoder.encode("Uy, tuvimos un problema para responder. Probá de nuevo en un rato o escribinos por WhatsApp.")
-        );
-        controller.close();
+        try {
+          controller.enqueue(
+            encoder.encode("Uy, tuvimos un problema para responder. Probá de nuevo en un rato o escribinos por WhatsApp.")
+          );
+          controller.close();
+        } catch {
+          // El cliente ya cerró la conexión: no hay a quién avisarle.
+        }
       }
     },
   });

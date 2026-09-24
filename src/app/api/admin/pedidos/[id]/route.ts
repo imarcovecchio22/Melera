@@ -18,8 +18,9 @@ const updateSchema = z.object({
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise;
   const body = await req.json().catch(() => null);
   const parsed = updateSchema.safeParse(body);
 

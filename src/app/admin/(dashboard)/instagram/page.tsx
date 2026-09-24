@@ -46,7 +46,7 @@ function valoresDe(post: PostIG): PostIGValores {
 }
 
 async function estadoConexiones() {
-  const host = headers().get("host") ?? "";
+  const host = (await headers()).get("host") ?? "";
   const [token, webhook] = await Promise.all([
     estadoToken().catch((e: Error) => ({ valido: false, diasRestantes: null, expiraEn: null, error: e.message })),
     telegramConfigurado()

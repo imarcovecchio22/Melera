@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const {
-  readImageToken,
-  renderImage,
-  ValidationError,
-  SignatureError,
-} = require("../../../../../../melera-templates/generate");
+// Módulo CommonJS compartido con las plantillas (melera-templates/generate.js)
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const generate = require("../../../../../../melera-templates/generate");
+const { readImageToken, renderImage, ValidationError, SignatureError } = generate;
 import { errorMessage, logEvent } from "@/lib/logs";
 
 export const runtime = "nodejs";
@@ -15,8 +12,9 @@ export const maxDuration = 60;
 // así que el resultado es inmutable y queda cacheado en la CDN de Vercel.
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { formato: string; token: string } }
+  { params: paramsPromise }: { params: Promise<{ formato: string; token: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const data = readImageToken(params.token);
     const jpeg: Buffer = await renderImage(data, params.formato);
@@ -27,19 +25,19 @@ export async function GET(
         "Cache-Control": "public, max-age=31536000, s-maxage=31536000, immutable",
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof SignatureError) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+      return NextResponse.json({ error: errorMessage(error) }, { status: 403 });
     }
     if (error instanceof ValidationError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: errorMessage(error) }, { status: 400 });
     }
     await logEvent("imagen", `Falló el render de una imagen (${params.formato})`, {
       nivel: "error",
       detalle: { error: errorMessage(error) },
     });
     return NextResponse.json(
-      { error: `Error interno: ${error?.message}` },
+      { error: `Error interno: ${errorMessage(error)}` },
       { status: 500 }
     );
   }

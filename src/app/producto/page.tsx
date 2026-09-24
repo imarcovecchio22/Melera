@@ -9,10 +9,11 @@ import { formatPrecio } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function ProductoPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: { origen?: string | string[] };
+  searchParams: Promise<{ origen?: string | string[] }>;
 }) {
+  const searchParams = await searchParamsPromise;
   const product = await getMainProduct();
   const origen = Array.isArray(searchParams.origen) ? searchParams.origen[0] : searchParams.origen;
 

@@ -7,10 +7,11 @@ import { applyPaymentStatus } from "@/lib/orders";
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPendingPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: { orderId?: string; payment_id?: string };
+  searchParams: Promise<{ orderId?: string; payment_id?: string }>;
 }) {
+  const searchParams = await searchParamsPromise;
   const { orderId, payment_id } = searchParams;
 
   if (orderId && payment_id) {

@@ -15,10 +15,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ConsultasPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: { origen?: string | string[] };
+  searchParams: Promise<{ origen?: string | string[] }>;
 }) {
+  const searchParams = await searchParamsPromise;
   const product = await getMainProduct();
   const origen = Array.isArray(searchParams.origen) ? searchParams.origen[0] : searchParams.origen;
 
