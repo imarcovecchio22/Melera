@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 
 // --- mocks de base de datos, API de Instagram, Telegram y logs ---
 const db = vi.hoisted(() => ({
-  evento: { create: vi.fn(), update: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
+  evento: { create: vi.fn(), update: vi.fn(), updateMany: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
   regla: { findMany: vi.fn() },
 }));
 vi.mock("@/lib/prisma", () => ({ prisma: { instagramEvento: db.evento, autoRespuesta: db.regla } }));
@@ -32,7 +32,7 @@ vi.mock("@/lib/logs", () => ({
 const pendientes: Promise<unknown>[] = [];
 vi.mock("@vercel/functions", () => ({ waitUntil: (p: Promise<unknown>) => pendientes.push(p) }));
 
-import { procesarEvento } from "@/lib/instagram/autorespuestas";
+import { HORAS_ENTRE_RESPUESTAS, procesarEvento, reiniciarLimite } from "@/lib/instagram/autorespuestas";
 import { GET as verificar, POST as webhook } from "@/app/api/instagram/webhook/route";
 
 const REGLA = {
@@ -86,15 +86,25 @@ describe("procesarEvento", () => {
     expect(accionFinal()).toEqual({ accion: "sin_coincidencia" });
   });
 
-  it("no repite la misma regla al mismo usuario dentro de las 12 h", async () => {
+  it("no repite la misma regla al mismo usuario dentro de las 2 h", async () => {
     db.evento.findFirst.mockResolvedValue({ id: 99 });
     await procesarEvento(DM);
     expect(ig.enviarDm).not.toHaveBeenCalled();
     expect(accionFinal()).toMatchObject({ reglaId: 7, accion: "ignorado" });
     const filtro = db.evento.findFirst.mock.calls[0][0].where;
-    expect(filtro).toMatchObject({ usuarioIgId: "u1", reglaId: 7, accion: "respondido" });
+    expect(filtro).toMatchObject({ usuarioIgId: "u1", reglaId: 7, accion: "respondido", cuentaParaLimite: true });
     const horas = (Date.now() - filtro.createdAt.gte.getTime()) / 3_600_000;
-    expect(Math.round(horas)).toBe(12);
+    expect(HORAS_ENTRE_RESPUESTAS).toBe(2);
+    expect(Math.round(horas)).toBe(2);
+  });
+
+  it("reiniciar el límite libera solo las respuestas de esa cuenta", async () => {
+    db.evento.updateMany.mockResolvedValue({ count: 2 });
+    expect(await reiniciarLimite("u1")).toBe(2);
+    expect(db.evento.updateMany).toHaveBeenCalledWith({
+      where: { usuarioIgId: "u1", accion: "respondido", cuentaParaLimite: true },
+      data: { cuentaParaLimite: false },
+    });
   });
 
   it("un comentario recibe DM privado y respuesta pública", async () => {

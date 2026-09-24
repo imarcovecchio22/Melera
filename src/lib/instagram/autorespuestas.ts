@@ -9,7 +9,7 @@ import { enviarDm, enviarRespuestaPrivada, responderComentario } from "@/lib/ins
 import type { EventoEntrante } from "@/lib/instagram/webhook";
 
 // No se le manda la misma regla al mismo usuario más de una vez en esta ventana.
-export const HORAS_ENTRE_RESPUESTAS = 12;
+export const HORAS_ENTRE_RESPUESTAS = 2;
 
 // Con esta cantidad de errores seguidos al responder, se avisa por Telegram.
 export const ERRORES_SEGUIDOS_PARA_AVISAR = 5;
@@ -56,7 +56,13 @@ export async function procesarEvento(ev: EventoEntrante) {
 
     const desde = new Date(Date.now() - HORAS_ENTRE_RESPUESTAS * 3_600_000);
     const reciente = await prisma.instagramEvento.findFirst({
-      where: { usuarioIgId: ev.usuarioIgId, reglaId: regla.id, accion: "respondido", createdAt: { gte: desde } },
+      where: {
+        usuarioIgId: ev.usuarioIgId,
+        reglaId: regla.id,
+        accion: "respondido",
+        cuentaParaLimite: true,
+        createdAt: { gte: desde },
+      },
       select: { id: true },
     });
     if (reciente) {
@@ -93,6 +99,18 @@ export async function procesarEvento(ev: EventoEntrante) {
     });
     await avisarSiHayErroresSeguidos();
   }
+}
+
+/**
+ * Para pruebas: hace que las respuestas ya enviadas a esta cuenta dejen de bloquear,
+ * así la próxima vez que escriba se le responde aunque no hayan pasado las horas.
+ */
+export async function reiniciarLimite(usuarioIgId: string) {
+  const { count } = await prisma.instagramEvento.updateMany({
+    where: { usuarioIgId, accion: "respondido", cuentaParaLimite: true },
+    data: { cuentaParaLimite: false },
+  });
+  return count;
 }
 
 /**

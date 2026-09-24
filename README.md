@@ -97,7 +97,7 @@ Ver `.env.example` para el detalle completo.
 ## Respuestas automáticas
 
 - **Configuración en Meta:** paso a paso en [`docs/instagram-setup.md`](docs/instagram-setup.md), incluido el orden para dejar ManyChat sin respuestas dobles.
-- **Webhook:** `/api/instagram/webhook` valida la firma `X-Hub-Signature-256`, responde 200 enseguida y procesa en segundo plano. Cada mensaje o comentario se registra en `InstagramEvento` por su id (un reintento de Meta no responde dos veces). No repite la misma regla a la misma persona por 12 h.
+- **Webhook:** `/api/instagram/webhook` valida la firma `X-Hub-Signature-256`, responde 200 enseguida y procesa en segundo plano. Cada mensaje o comentario se registra en `InstagramEvento` por su id (un reintento de Meta no responde dos veces). No repite la misma regla a la misma persona por 2 h (`HORAS_ENTRE_RESPUESTAS`); para pruebas, "Reiniciar límite" en la tabla de mensajes lo libera para esa cuenta.
 - **Coincidencia:** sin tildes, mayúsculas ni signos, por palabra completa ("info" no coincide con "informal"). Gana la regla activa de mayor prioridad. `$PRECIO` en la respuesta se reemplaza por el precio actual del producto.
 - **Token:** `/api/cron/instagram-token` (diario) lo renueva cuando le quedan menos de 15 días; si falla, avisa por Telegram. Con 5 errores seguidos al responder también avisa.
 - **Código:** `src/lib/instagram/reglas.ts` (coincidencia, sin servidor: la usa también el Probador), `webhook.ts` (firma y lectura del aviso), `autorespuestas.ts` (procesamiento), `mensajes.ts` y `token.ts` (API de Instagram).

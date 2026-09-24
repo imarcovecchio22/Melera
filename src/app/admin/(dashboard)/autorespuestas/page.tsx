@@ -10,6 +10,7 @@ import AutoRespuestaForm, { type AutoRespuestaValores } from "@/components/admin
 import AutoRespuestaActions from "@/components/admin/AutoRespuestaActions";
 import ProbadorRespuestas from "@/components/admin/ProbadorRespuestas";
 import TokenIGRenovar from "@/components/admin/TokenIGRenovar";
+import ReiniciarLimiteIG from "@/components/admin/ReiniciarLimiteIG";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +59,20 @@ export default async function AdminAutoRespuestasPage() {
     getMainProduct(),
     estadoToken(),
   ]);
+
+  // Cuentas a las que todavía les bloquea el límite: el botón va solo en su evento más reciente.
+  const desdeLimite = new Date(Date.now() - HORAS_ENTRE_RESPUESTAS * 3_600_000);
+  const conBoton = new Set<number>();
+  const vistas = new Set<string>();
+  for (const e of eventos) {
+    if (vistas.has(e.usuarioIgId)) continue;
+    vistas.add(e.usuarioIgId);
+    const bloqueada = eventos.some(
+      (x) =>
+        x.usuarioIgId === e.usuarioIgId && x.accion === "respondido" && x.cuentaParaLimite && x.createdAt >= desdeLimite
+    );
+    if (bloqueada) conBoton.add(e.id);
+  }
 
   const faltan = ["IG_APP_SECRET", "IG_WEBHOOK_VERIFY_TOKEN", "IG_ACCESS_TOKEN", "IG_USER_ID"].filter(
     (v) => !process.env[v]
@@ -202,6 +217,7 @@ export default async function AdminAutoRespuestasPage() {
                   <td className="px-4 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${ACCION[e.accion].color}`}>{ACCION[e.accion].label}</span>
                     {e.error && <p className="mt-1 max-w-xs break-words text-xs text-stone-500">{e.error}</p>}
+                    {conBoton.has(e.id) && <ReiniciarLimiteIG usuarioIgId={e.usuarioIgId} />}
                   </td>
                 </tr>
               ))}

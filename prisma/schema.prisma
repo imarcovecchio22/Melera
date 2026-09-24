@@ -218,16 +218,18 @@ enum AccionEventoIG {
 
 // Cada mensaje o comentario recibido por el webhook de Instagram y qué se hizo con él
 model InstagramEvento {
-  id          Int            @id @default(autoincrement())
-  tipo        TipoEventoIG
-  externalId  String         @unique // mid del mensaje o id del comentario
-  usuarioIgId String
-  texto       String
-  reglaId     Int?
-  regla       AutoRespuesta? @relation(fields: [reglaId], references: [id], onDelete: SetNull)
-  accion      AccionEventoIG @default(procesando)
-  error       String?
-  createdAt   DateTime       @default(now())
+  id               Int            @id @default(autoincrement())
+  tipo             TipoEventoIG
+  externalId       String         @unique // mid del mensaje o id del comentario
+  usuarioIgId      String
+  texto            String
+  reglaId          Int?
+  regla            AutoRespuesta? @relation(fields: [reglaId], references: [id], onDelete: SetNull)
+  accion           AccionEventoIG @default(procesando)
+  error            String?
+  // false = una respuesta que ya no bloquea (se tocó "Reiniciar límite" en el admin)
+  cuentaParaLimite Boolean        @default(true)
+  createdAt        DateTime       @default(now())
 
   @@index([createdAt])
   @@index([usuarioIgId, reglaId, createdAt])

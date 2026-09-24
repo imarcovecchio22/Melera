@@ -95,5 +95,6 @@ Para comentarios (y para DMs si la prueba del paso 7 falla):
 ## Mantenimiento
 
 - **Token:** el cron diario lo renueva cuando le quedan menos de 15 días. Si falla, llega un aviso por Telegram. También se puede renovar desde `/admin/autorespuestas` con "Renovar ahora". Si se venció del todo, generá uno nuevo (paso 3), cargalo en `IG_ACCESS_TOKEN` y hacé redeploy: la web detecta que cambió y lo toma.
+- **Límite entre respuestas:** a una misma cuenta no se le repite la misma regla por 2 h (aparece como "Ignorado"). Para probar varias veces seguidas desde la misma cuenta, tocá **"Reiniciar límite (para pruebas)"** en la tabla de mensajes recibidos.
 - **Errores:** con 5 respuestas fallidas seguidas llega un aviso por Telegram. El detalle de cada error está en la tabla de mensajes recibidos y en `/admin/logs`.
 - **Límites de Meta que respeta la web:** los DMs se responden dentro de las 24 h del mensaje; a un comentario se le manda **un solo** DM privado, dentro de los 7 días.
