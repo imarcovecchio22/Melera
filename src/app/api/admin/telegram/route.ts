@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
-import { sendTelegramMessage } from "@/lib/telegram";
+import { parseBotToken, sendTelegramMessage } from "@/lib/telegram";
 
 // Diagnóstico de los avisos por Telegram (protegido por el middleware de /api/admin).
 function formatoToken(raw?: string) {
   if (!raw) return null;
-  const t = raw.trim().replace(/^["']|["']$/g, "").replace(/^bot/i, "");
+  const token = parseBotToken(raw);
   return {
-    largo: t.length,
-    tieneDosPuntos: t.includes(":"),
-    antesDeDosPuntosEsNumero: /^\d+:/.test(t),
-    espaciosOComillasOriginales: raw !== raw.trim() || /["']/.test(raw),
+    largoDelValor: raw.length,
+    seEncontroUnToken: Boolean(token),
+    largoDelToken: token?.length ?? null,
   };
 }
 

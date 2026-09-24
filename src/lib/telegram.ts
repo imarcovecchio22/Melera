@@ -1,11 +1,18 @@
 /**
+ * Extrae el token ("<id numérico>:<secreto>") aunque la variable tenga texto de más
+ * (comillas, prefijo "bot", el mensaje entero de BotFather, etc.).
+ */
+export function parseBotToken(raw?: string) {
+  return raw?.match(/\d{6,}:[A-Za-z0-9_-]{30,}/)?.[0];
+}
+
+/**
  * Manda un mensaje al chat de Melera con el bot de Telegram (sin pasar por Make).
  * Si faltan TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID no hace nada; si Telegram
  * responde con error, lanza para que quien llama lo loguee.
  */
 export async function sendTelegramMessage(text: string) {
-  // tolera errores comunes al pegar el token: espacios, comillas o el prefijo "bot"
-  const token = process.env.TELEGRAM_BOT_TOKEN?.trim().replace(/^["']|["']$/g, "").replace(/^bot/i, "");
+  const token = parseBotToken(process.env.TELEGRAM_BOT_TOKEN);
   const chatId = process.env.TELEGRAM_CHAT_ID?.trim().replace(/^["']|["']$/g, "");
   if (!token || !chatId) return;
 
