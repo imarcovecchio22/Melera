@@ -96,7 +96,16 @@ export async function answerTelegramCallback(callbackQueryId: string, text: stri
   await telegramApi("answerCallbackQuery", { callback_query_id: callbackQueryId, text }, 4000);
 }
 
-/** URL pública del sitio para armar links al admin. */
+/**
+ * URL pública del sitio (links al admin e imágenes que piden Telegram y Meta).
+ * Si NEXT_PUBLIC_BASE_URL viene vacía o mal armada, usa el dominio de producción.
+ */
 export function siteUrl() {
-  return (process.env.NEXT_PUBLIC_BASE_URL ?? "https://melera.vercel.app").replace(/\/$/, "");
+  const candidatas = [
+    process.env.NEXT_PUBLIC_BASE_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`,
+    "https://melera.vercel.app",
+  ];
+  const url = candidatas.map((c) => c?.trim()).find((c) => c && /^https?:\/\/[^/\s]+/.test(c));
+  return url!.replace(/\/+$/, "");
 }
