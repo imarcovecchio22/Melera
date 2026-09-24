@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { whatsappLink } from "@/lib/utils";
 
 export default function Footer() {
@@ -17,16 +18,24 @@ export default function Footer() {
           </div>
         </div>
 
-        {numero && (
-          <a
-            href={whatsappLink(numero, "Hola! Tengo una consulta sobre Melera.")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-600"
+        <div className="flex flex-col items-center gap-3 sm:flex-row">
+          <Link
+            href="/consultas"
+            className="inline-flex items-center gap-2 rounded-full border border-[#CBB392]/40 px-5 py-2.5 text-sm font-semibold text-[#FFF3DC] transition hover:bg-white/10"
           >
-            Consultas por WhatsApp
-          </a>
-        )}
+            Consultas
+          </Link>
+          {numero && (
+            <a
+              href={whatsappLink(numero, "Hola! Tengo una consulta sobre Melera.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-600"
+            >
+              Consultas por WhatsApp
+            </a>
+          )}
+        </div>
       </div>
       <div className="border-t border-white/10 py-3 text-center text-xs text-[#8A6040]">
         © {new Date().getFullYear()} Melera. Todos los derechos reservados.

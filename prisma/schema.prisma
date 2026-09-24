@@ -62,3 +62,29 @@ model Order {
   @@index([estado])
   @@index([mpPreferenceId])
 }
+
+enum CanalRespuesta {
+  instagram
+  email
+}
+
+enum ConsultaEstado {
+  nueva
+  respondida
+  archivada
+}
+
+model Consulta {
+  id        Int            @id @default(autoincrement())
+  nombre    String
+  canal     CanalRespuesta
+  instagram String? // siempre con @ adelante
+  email     String?
+  mensaje   String
+  origen    String? // ?origen= de la URL (ej: "instagram" desde ManyChat)
+  estado    ConsultaEstado @default(nueva)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([estado, createdAt])
+}

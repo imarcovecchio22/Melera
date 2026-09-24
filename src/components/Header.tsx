@@ -15,6 +15,9 @@ export default function Header() {
           <Link href="/#nosotros" className="hidden hover:text-miel-600 sm:inline">
             Quiénes somos
           </Link>
+          <Link href="/consultas" className="hover:text-miel-600">
+            Consultas
+          </Link>
           <Link href="/producto" className="btn-primary !px-4 !py-2 text-sm">
             Comprar
           </Link>
