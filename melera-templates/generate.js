@@ -21,7 +21,7 @@ const TIPOS = ['presentacion', 'producto', 'dato'];
 
 const REQUIRED_FIELDS = {
   presentacion: ['fecha', 'tagline', 'titulo', 'texto'],
-  producto: ['fecha', 'imagen_url', 'nombre_producto', 'caracteristicas', 'precio'],
+  producto: ['fecha', 'imagen_url', 'nombre_producto', 'precio'],
   dato: ['fecha', 'numero', 'texto_dato'],
 };
 
@@ -52,7 +52,30 @@ function normalizeData(data) {
     out.numero = `${out.numero}${out.sufijo}`;
   }
 
+  if (has(out.precio)) out.precio = formatPrecio(out.precio);
+
+  // el precio ya va grande abajo: no lo repitas como etiqueta
+  if (has(out.caracteristicas)) {
+    const precioDigits = digitsOf(out.precio);
+    out.caracteristicas = String(out.caracteristicas)
+      .split('|')
+      .map((s) => s.trim())
+      .filter((s) => s && !s.includes('$') && !(precioDigits && digitsOf(s) === precioDigits))
+      .join('|');
+  }
+
   return out;
+}
+
+function digitsOf(value) {
+  return String(value || '').replace(/\D/g, '');
+}
+
+// "6500" / "6.500" / 6500 -> "$6.500"; si ya trae "$" u otro texto, se deja como está.
+function formatPrecio(value) {
+  const s = String(value).trim();
+  if (!/^[\d.\s]+$/.test(s)) return s;
+  return `$${digitsOf(s).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 }
 
 class ValidationError extends Error {

@@ -19,6 +19,20 @@ async function warmImage(url: string) {
   await res.arrayBuffer();
 }
 
+// Devuelve el problema encontrado, o null si la URL responde con una imagen.
+async function checkImage(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(15000) });
+    const type = res.headers.get("content-type") || "";
+    await res.body?.cancel().catch(() => {});
+    if (!res.ok) return `respondió ${res.status}`;
+    if (!type.startsWith("image/")) return `es ${type.split(";")[0] || "otro tipo de archivo"}, no una imagen`;
+    return null;
+  } catch (error: any) {
+    return `no se pudo abrir: ${error?.message}`;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const expectedSecret = process.env.GENERATE_WEBHOOK_SECRET;
   if (expectedSecret) {
@@ -42,9 +56,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Body inválido" }, { status: 400 });
   }
 
+  const baseUrl = process.env.PUBLIC_BASE_URL || req.nextUrl.origin;
+
+  // La foto del producto tiene que ser una imagen pública; si no, el post sale sin foto.
+  if (body.imagen_url) {
+    body.imagen_url = new URL(String(body.imagen_url).trim(), baseUrl).toString();
+    if (body.tipo === "producto") {
+      const problema = await checkImage(body.imagen_url);
+      if (problema) {
+        return NextResponse.json(
+          { error: `imagen_url no es una imagen válida (${problema}): ${body.imagen_url}` },
+          { status: 400 }
+        );
+      }
+    }
+  }
+
   let urls: { image_url: string; story_image_url: string };
   try {
-    const baseUrl = process.env.PUBLIC_BASE_URL || req.nextUrl.origin;
     urls = buildImageUrls(body, baseUrl);
   } catch (error: any) {
     if (error instanceof ValidationError) {
