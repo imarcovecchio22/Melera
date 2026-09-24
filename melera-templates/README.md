@@ -1,6 +1,7 @@
 # Melera — Templates IG v3
 
-6 plantillas HTML (2 estilos × 3 tipos) que se renderizan con htmlcsstoimage.com.
+6 plantillas HTML (2 estilos × 3 tipos) que se renderizan con **Chromium en nuestra propia app de Vercel**
+(`puppeteer-core` + `@sparticuz/chromium`). No hay servicio externo ni cuota mensual de imágenes.
 Cada plantilla sirve para **feed y story**: el diseño se adapta solo según el tamaño de render.
 
 | Formato | Tamaño | Uso |
@@ -15,7 +16,10 @@ Cada plantilla sirve para **feed y story**: el diseño se adapta solo según el 
 | `organico-{presentacion,dato,producto}.html` | Estilo orgánico: fondo oscuro, gotas de miel, logo en círculo crema |
 | `geo-{presentacion,dato,producto}.html` | Estilo geométrico: fondo crema, hexágonos, logo directo |
 | `logo.png` | Logo Melera (abeja + hexágono + wordmark). `generate.js` lo inyecta como data URI en `{{logo_src}}` |
-| `generate.js` | Rellena la plantilla y llama a htmlcsstoimage (feed y story en paralelo) |
+| `generate.js` | Normaliza y valida los datos, rellena la plantilla, arma y verifica las URLs firmadas |
+| `render.js` | Abre Chromium y saca la captura JPEG (en Vercel usa `@sparticuz/chromium`; en local, Chrome/Edge instalado o `CHROME_PATH`) |
+
+Rutas de la app que lo usan: `src/app/api/generate/route.ts` y `src/app/api/img/[formato]/[token]/route.ts`.
 
 Tipografías: Fraunces + Poppins (Google Fonts, `<link>` en el `<head>`).
 
@@ -41,18 +45,22 @@ El encabezado "¿Sabías que?" es fijo en la plantilla.
 ### Producto
 | Variable | Ejemplo |
 |---|---|
-| `{{imagen_url}}` | URL pública de la foto (Imgur, Drive público, etc.) |
-| `{{nombre_producto}}` | `Miel <em>cremosa</em>` |
-| `{{caracteristicas}}` | `Artesanal\|Certificada\|500 g` (separadas por `\|`, se muestran como etiquetas) |
-| `{{precio}}` | `$4.500` |
+| `{{imagen_url}}` | `https://melera.vercel.app/producto-miel.png` (PNG sin fondo; también acepta `/producto-miel.png`) |
+| `{{nombre_producto}}` | `Miel <em>Artesanal</em>` |
+| `{{caracteristicas}}` | `Miel pura\|Frasco 500 g` (separadas por `\|`, se muestran como etiquetas; opcional) |
+| `{{precio}}` | `6500` o `$6.500` (se muestra `$6.500`) |
+
+Obligatorios por tipo: presentación `tagline`, `titulo`, `texto` · dato `numero`, `texto_dato` · producto `imagen_url`, `nombre_producto`, `precio`.
 
 ### Reglas
 - `{{titulo}}` y `{{nombre_producto}}` aceptan `<em>…</em>` / `<i>…</i>` (cursiva color miel) y `<br>`. El resto del HTML se escapa.
-- Los textos largos se achican solos (script al final de cada plantilla); por eso se renderiza con `ms_delay: 500`.
+- Los textos largos se achican solos (script al final de cada plantilla). La foto de producto también cede espacio si no entra todo.
+- `precio` numérico se formatea como `$6.500`; cualquier etiqueta que sea un precio se descarta (el precio ya va grande abajo).
+- `imagen_url` tiene que responder con una imagen: si es una página (por ejemplo `/producto`) o da error, `/api/generate` devuelve 400 con el motivo.
 - `{{logo_src}}` lo completa `generate.js`; no hay que mandarlo.
 
 ### Compatibilidad con la Sheet "Cronograma"
-`generate.js` (`normalizeData`) traduce los nombres de columna que ya usa Make:
+`generate.js` (`normalizeData`) traduce los nombres de columna que usa Make:
 
 | Sheet / Make | Plantilla |
 |---|---|
@@ -60,22 +68,32 @@ El encabezado "¿Sabías que?" es fijo en la plantilla.
 | `caracteristica_1..3` | `caracteristicas` (unidas con `\|`) |
 | `numero` + `sufijo` | `numero` |
 
-`tag_inferior`, `intro_label`, `unidad`, `descripcion`, `categoria`, `presentacion` y `hashtags` ya no se muestran en la imagen.
+`tag_inferior`, `intro_label`, `unidad`, `descripcion`, `categoria`, `presentacion` y `hashtags` no se muestran en la imagen.
 
-## Endpoint
+## Endpoints
 
-`POST https://melera.vercel.app/api/generate` con header `x-webhook-secret`. Body: `tipo`, `estilo`, `fecha` + las variables del tipo.
+### `POST /api/generate`
+Header `x-webhook-secret` (= env `GENERATE_WEBHOOK_SECRET`). Body `application/x-www-form-urlencoded`
+(lo que usa Make) o JSON: `tipo`, `estilo`, `fecha` + las variables del tipo.
 
 ```json
 {
-  "image_url": "https://hcti.io/v1/image/...",        // feed 1080x1350
-  "story_image_url": "https://hcti.io/v1/image/...",  // story 1080x1920
-  "filename": "2026-09-23_organico-dato.png"
+  "image_url": "https://melera.vercel.app/api/img/feed/<token>.jpg",
+  "story_image_url": "https://melera.vercel.app/api/img/story/<token>.jpg",
+  "filename": "2026-09-23_organico-dato.jpg"
 }
 ```
 
-Cada llamada consume **2 imágenes** de la cuota de htmlcsstoimage (una por formato).
-Si se repite exactamente el mismo HTML, hcti devuelve la imagen cacheada sin cobrar.
+Antes de responder pide las dos imágenes, así un error de render aparece acá (502) y no recién al publicar.
+Errores de datos → 400 con `{"error": "…"}` (Make los reenvía a Telegram).
+
+### `GET /api/img/{feed|story}/<token>.jpg`
+Renderiza la plantilla y devuelve el JPEG. El token lleva los datos comprimidos (deflate + base64url) y una
+firma HMAC (env `IMAGE_SIGNING_SECRET`, o `GENERATE_WEBHOOK_SECRET` si no está), así que nadie puede
+generar imágenes arbitrarias con nuestra URL. La respuesta es inmutable y queda en la CDN de Vercel un año:
+el primer pedido tarda 2–7 s (Chromium), los siguientes son instantáneos. Se toleran `.jpg` extra al final.
+
+Si se cambia una plantilla, las URLs viejas ya cacheadas siguen mostrando el diseño anterior; las nuevas salen con el nuevo.
 
 ## Uso local
 
@@ -85,20 +103,10 @@ node generate.js ejemplo.json
 node generate.js '{"tipo":"dato","estilo":"geo","fecha":"2026-09-23","numero":"50.000+","texto_dato":"abejas en una colmena","tagline":"la magia de la colmena"}'
 ```
 
-Guarda feed y story en `output/`. Necesita `HCTI_USER_ID` y `HCTI_API_KEY` en `.env`.
+Guarda feed y story en `output/` (JPEG). Usa Chrome/Edge instalado; si no lo encuentra, definir `CHROME_PATH`.
 
-Para previsualizar sin gastar cuota: abrir el HTML en Chrome con la ventana en 1080×1350 o 1080×1920 (o `chrome --headless=new --window-size=1080,1350 --screenshot=out.png archivo.html`).
+Para previsualizar solo el HTML: abrir la plantilla en Chrome con la ventana en 1080×1350 o 1080×1920.
 
-## Parámetros enviados a htmlcsstoimage
-
-```json
-{
-  "html": "<plantilla con variables reemplazadas>",
-  "viewport_width": 1080,
-  "viewport_height": 1350,
-  "selector": "body",
-  "ms_delay": 500,
-  "google_fonts": "Fraunces:400,400i,500i,600,700|Poppins:400,500,600"
-}
-```
-(`viewport_height: 1920` para la story.)
+## Deploy
+- `@sparticuz/chromium` y `puppeteer-core` están en `serverComponentsExternalPackages` y el binario de Chromium se incluye con `outputFileTracingIncludes` (`next.config.js`).
+- Requieren Node ≥ 22.17: el proyecto de Vercel está en Node 24.x. No agregar `engines.node` al `package.json` (fijar 22.x rompió el build).
