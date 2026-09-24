@@ -22,15 +22,22 @@ export default async function ConsultasPage({
   const product = await getMainProduct();
   const origen = Array.isArray(searchParams.origen) ? searchParams.origen[0] : searchParams.origen;
 
-  const preguntas = [
+  const preguntas: { pregunta: string; respuesta: React.ReactNode }[] = [
     {
       pregunta: "¿Cuánto sale el frasco?",
       respuesta: `El frasco de ${product.nombre} sale ${formatPrecio(product.precio)}.`,
     },
     {
       pregunta: "¿Hacen envíos? ¿A qué zonas?",
-      // TODO: completar zonas y costos de envío.
-      respuesta: "TODO: completar zonas y costos de envío.",
+      respuesta: (
+        <>
+          Sí, hacemos envíos a CABA. Para otras zonas lo coordinamos con vos:{" "}
+          <a href="#escribinos" className="font-semibold text-miel-700 underline underline-offset-4">
+            escribinos acá abajo
+          </a>{" "}
+          y te contamos las opciones.
+        </>
+      ),
     },
     {
       pregunta: "¿Cómo puedo pagar?",
@@ -81,8 +88,8 @@ export default async function ConsultasPage({
             </div>
           </section>
 
-          <section aria-labelledby="escribinos" className="mt-10">
-            <h2 id="escribinos" className="mb-4 font-serif text-xl font-semibold text-marron">
+          <section id="escribinos" aria-labelledby="escribinos-titulo" className="mt-10 scroll-mt-20">
+            <h2 id="escribinos-titulo" className="mb-4 font-serif text-xl font-semibold text-marron">
               Escribinos
             </h2>
             <ConsultaForm origen={origen} />
