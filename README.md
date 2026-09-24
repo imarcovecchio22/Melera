@@ -1,6 +1,6 @@
 # Melera
 
-Tienda online de miel artesanal — landing, ficha de producto, checkout con MercadoPago y panel de administración de pedidos y stock.
+Tienda online de miel artesanal — landing, ficha de producto, checkout con MercadoPago, sección de consultas y panel de administración de pedidos, stock y consultas. Incluye además el generador de imágenes de Instagram que usa la automatización de Make (ver `melera-templates/README.md`).
 
 ## Stack
 
@@ -15,13 +15,16 @@ Tienda online de miel artesanal — landing, ficha de producto, checkout con Mer
 - Landing con presentación del producto y sección "Quiénes somos"
 - Página de producto y checkout con selector de cantidad
 - Integración con MercadoPago (Checkout Pro) y webhook de confirmación de pago
-- Panel `/admin` protegido: gestión de pedidos (estado, detalle) y stock
+- `/consultas`: preguntas frecuentes (precio real desde la base) + formulario mobile-first para quien llega desde Instagram/ManyChat (responder por Instagram o email, anti-spam con honeypot y tiempo mínimo). Cada consulta se guarda y se avisa a Make → Telegram
+- `?origen=` (ej. `instagram` desde los botones de ManyChat) se guarda en las consultas y en los pedidos que pasan por `/producto` → Comprar → checkout
+- Panel `/admin` protegido: pedidos (estado, detalle, origen), stock y consultas (link directo a ig.me / mailto, marcar respondida, archivar). Fechas en hora de Argentina
+- `/api/generate` + `/api/img/...`: imágenes de feed y story para Instagram, renderizadas con Chromium en Vercel
 
 ## Desarrollo local
 
 ### Requisitos
 
-- Node.js 20+
+- Node.js 22.17+ (lo exige `@sparticuz/chromium`; en Vercel el proyecto usa Node 24.x — no fijar `engines.node` en `package.json`)
 - Una base PostgreSQL accesible (local vía Docker o remota)
 
 ### Setup
@@ -29,7 +32,7 @@ Tienda online de miel artesanal — landing, ficha de producto, checkout con Mer
 ```bash
 npm install
 cp .env.example .env.local   # completar con tus valores, ver tabla abajo
-npx prisma db push           # crea las tablas en la base indicada por DATABASE_URL
+npx prisma migrate deploy    # aplica las migraciones de prisma/migrations
 npm run dev                  # http://localhost:3000
 ```
 
@@ -45,6 +48,13 @@ npm run dev                  # http://localhost:3000
 | `NEXTAUTH_URL` | URL base del sitio (usada en la sesión) |
 | `WHATSAPP_NUMBER` | Número de contacto para el botón de WhatsApp (código de país, sin `+`) |
 | `NEXT_PUBLIC_BASE_URL` | URL pública del sitio, usada en los redirects de MercadoPago |
+| `MAKE_ORDER_WEBHOOK_URL` | Webhook de Make para avisar por Telegram un pedido pagado (opcional) |
+| `MAKE_CONSULTA_WEBHOOK_URL` | Webhook de Make para avisar por Telegram una consulta nueva (opcional) |
+| `GEMINI_API_KEY` | API key de Gemini para el chat de atención (widget flotante) |
+| `GENERATE_WEBHOOK_SECRET` | Secreto que Make manda en `x-webhook-secret` a `/api/generate`; también firma las URLs de `/api/img` |
+| `IMAGE_SIGNING_SECRET` | Opcional: secreto propio para firmar las URLs de `/api/img` (si no está, usa `GENERATE_WEBHOOK_SECRET`) |
+
+`NEXTAUTH_SECRET` es obligatoria en producción: sin ella el login de `/admin` falla después de validar usuario y contraseña (el middleware tampoco puede verificar la sesión). Después de cargar o cambiar una variable en Vercel hay que hacer **Redeploy**: los deploys que ya existen no la toman.
 
 Ver `.env.example` para el detalle completo.
 
@@ -55,9 +65,15 @@ Ver `.env.example` para el detalle completo.
 | `npm run dev` | Servidor de desarrollo |
 | `npm run build` | `prisma generate` + build de producción |
 | `npm start` | Levanta el build de producción |
-| `npm run db:push` | Sincroniza el schema de Prisma con la base |
+| `npx prisma migrate dev --name <nombre>` | Crea una migración nueva a partir de cambios en `schema.prisma` (contra una base de desarrollo) |
+| `npx prisma migrate deploy` | Aplica las migraciones pendientes (producción) |
+| `npm run db:push` | Sincroniza el schema sin migraciones — ya no se usa desde 2026-09-24 |
 | `npm run db:studio` | Abre Prisma Studio |
 | `npm run db:seed` | Carga datos de ejemplo |
+
+## Base de datos
+
+Desde 2026-09-24 el esquema se maneja con migraciones (`prisma/migrations`). `0_init` es la foto del esquema que existía antes (creado con `db push`) y en Neon se marcó como aplicada con `prisma migrate resolve --applied 0_init`. Los cambios nuevos van como migraciones: crear con `migrate dev` y aplicar en producción con `migrate deploy` **antes** de hacer push del código que las usa.
 
 ## Deploy
 
