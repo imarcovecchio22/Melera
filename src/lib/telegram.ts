@@ -4,8 +4,9 @@
  * responde con error, lanza para que quien llama lo loguee.
  */
 export async function sendTelegramMessage(text: string) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  // tolera errores comunes al pegar el token: espacios, comillas o el prefijo "bot"
+  const token = process.env.TELEGRAM_BOT_TOKEN?.trim().replace(/^["']|["']$/g, "").replace(/^bot/i, "");
+  const chatId = process.env.TELEGRAM_CHAT_ID?.trim().replace(/^["']|["']$/g, "");
   if (!token || !chatId) return;
 
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
