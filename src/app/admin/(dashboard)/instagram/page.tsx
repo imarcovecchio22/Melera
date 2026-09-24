@@ -50,11 +50,22 @@ async function estadoConexiones() {
   const [token, webhook] = await Promise.all([
     estadoToken().catch((e: Error) => ({ valido: false, diasRestantes: null, expiraEn: null, error: e.message })),
     telegramConfigurado()
-      ? telegramApi<{ url?: string }>("getWebhookInfo", {}).catch(() => null)
+      ? telegramApi<{ url?: string; pending_update_count?: number; last_error_message?: string; last_error_date?: number }>(
+          "getWebhookInfo",
+          {}
+        ).catch(() => null)
       : Promise.resolve(null),
   ]);
   const webhookUrl = webhook?.url ?? "";
-  return { token, webhookUrl, botConectadoAqui: Boolean(host && webhookUrl.includes(`//${host}/`)) };
+  return {
+    token,
+    webhookUrl,
+    botConectadoAqui: Boolean(host && webhookUrl.includes(`//${host}/`)),
+    botPendientes: webhook?.pending_update_count ?? 0,
+    botUltimoError: webhook?.last_error_message
+      ? `${webhook.last_error_message}${webhook.last_error_date ? ` (${formatFecha(new Date(webhook.last_error_date * 1000))})` : ""}`
+      : null,
+  };
 }
 
 export default async function AdminInstagramPage() {
@@ -62,7 +73,7 @@ export default async function AdminInstagramPage() {
     prisma.postIG.findMany({ orderBy: [{ fecha: "desc" }, { id: "desc" }], take: 200 }),
     estadoConexiones(),
   ]);
-  const { token, webhookUrl, botConectadoAqui } = conexiones;
+  const { token, webhookUrl, botConectadoAqui, botPendientes, botUltimoError } = conexiones;
   const hoy = hoyArgentina();
 
   return (
@@ -89,6 +100,10 @@ export default async function AdminInstagramPage() {
           <p className={`mt-1 break-all font-semibold ${botConectadoAqui ? "text-emerald-700" : "text-amber-700"}`}>
             {botConectadoAqui ? "Conectado a esta web" : webhookUrl ? `Conectado a otro lado (${new URL(webhookUrl).host})` : "Sin conectar"}
           </p>
+          {botPendientes > 0 && (
+            <p className="mt-1 text-xs text-amber-700">{botPendientes} toques esperando para entregarse</p>
+          )}
+          {botUltimoError && <p className="mt-1 break-words text-xs text-red-700">Último error de Telegram: {botUltimoError}</p>}
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">Modo</p>
