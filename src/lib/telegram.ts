@@ -8,13 +8,13 @@ export function parseBotToken(raw?: string) {
 
 /**
  * Manda un mensaje al chat de Melera con el bot de Telegram (sin pasar por Make).
- * Si faltan TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID no hace nada; si Telegram
- * responde con error, lanza para que quien llama lo loguee.
+ * Devuelve false si faltan TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID (no manda nada);
+ * si Telegram responde con error, lanza para que quien llama lo registre.
  */
 export async function sendTelegramMessage(text: string) {
   const token = parseBotToken(process.env.TELEGRAM_BOT_TOKEN);
   const chatId = process.env.TELEGRAM_CHAT_ID?.trim().replace(/^["']|["']$/g, "");
-  if (!token || !chatId) return;
+  if (!token || !chatId) return false;
 
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
@@ -31,6 +31,7 @@ export async function sendTelegramMessage(text: string) {
     const detail = await res.text().catch(() => "");
     throw new Error(`Telegram respondió ${res.status}: ${detail.slice(0, 200)}`);
   }
+  return true;
 }
 
 /** URL pública del sitio para armar links al admin. */

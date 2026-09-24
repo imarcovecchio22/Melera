@@ -21,7 +21,7 @@ export async function notifyNuevaConsulta(consulta: Consulta) {
   const contacto = consulta.canal === "instagram" ? consulta.instagram : consulta.email;
   const responder = contactoHref(consulta);
 
-  await sendTelegramMessage(
+  return sendTelegramMessage(
     [
       `💬 Consulta #${consulta.id} de ${consulta.nombre}`,
       `${consulta.canal === "instagram" ? "Instagram" : "Email"}: ${contacto} · origen: ${consulta.origen ?? "directo"}`,

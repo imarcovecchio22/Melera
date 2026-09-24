@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getPaymentClient } from "@/lib/mercadopago";
 import { sendTelegramMessage, siteUrl } from "@/lib/telegram";
 import { formatPrecio } from "@/lib/utils";
+import { errorMessage, logEvent } from "@/lib/logs";
 import type { OrderStatus, Product } from "@prisma/client";
 
 export function mapMpStatus(status: string): OrderStatus | null {
@@ -52,9 +53,18 @@ async function applyPayment(
   if (!nuevoEstado) return null;
 
   const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order) return null;
+  if (!order) {
+    await logEvent("pago", `Pago ${payment.id} sin pedido asociado`, {
+      nivel: "warn",
+      detalle: { pedidoId: orderId, estadoMP: payment.status },
+    });
+    return null;
+  }
 
   if (order.estado === "pagado" && nuevoEstado !== "pagado") {
+    await logEvent("pago", `Pedido #${order.numero}: se ignoró "${payment.status}" porque ya estaba pagado`, {
+      detalle: { pagoMP: payment.id },
+    });
     return order;
   }
 
@@ -80,11 +90,30 @@ async function applyPayment(
     return { updated, product };
   });
 
+  if (order.estado !== nuevoEstado) {
+    await logEvent("pago", `Pedido #${order.numero}: ${order.estado} → ${nuevoEstado}`, {
+      nivel: nuevoEstado === "cancelado" ? "warn" : "info",
+      detalle: { pagoMP: payment.id, estadoMP: payment.status, total: order.total },
+    });
+  }
+
   if (pasaAPagado && product) {
     // Se espera (con timeout) para que Vercel no corte el envío al terminar la respuesta.
-    await notifyOrderPaid(updated, product).catch((error) => {
-      console.error("Error notificando pedido pagado por Telegram:", error);
-    });
+    try {
+      const enviado = await notifyOrderPaid(updated, product);
+      await logEvent(
+        "telegram",
+        enviado
+          ? `Aviso de pedido #${order.numero} pagado enviado`
+          : `Aviso de pedido #${order.numero} no enviado: falta configurar el bot`,
+        { nivel: enviado ? "info" : "warn" }
+      );
+    } catch (error) {
+      await logEvent("telegram", `Falló el aviso del pedido #${order.numero} pagado`, {
+        nivel: "error",
+        detalle: { error: errorMessage(error) },
+      });
+    }
   }
 
   return updated;
@@ -109,7 +138,7 @@ async function notifyOrderPaid(
   },
   product: { nombre: string; stock: number }
 ) {
-  await sendTelegramMessage(
+  return sendTelegramMessage(
     [
       `🛒 Pedido #${order.numero} pagado`,
       `${order.nombre} ${order.apellido} · ${order.localidad}, ${order.provincia}`,

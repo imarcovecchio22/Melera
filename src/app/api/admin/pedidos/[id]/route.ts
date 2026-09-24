@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logEvent } from "@/lib/logs";
 
 const ESTADOS = [
   "pendiente",
@@ -31,6 +32,7 @@ export async function PATCH(
       where: { id: params.id },
       data: { estado: parsed.data.estado },
     });
+    await logEvent("admin", `Pedido #${order.numero}: estado cambiado a ${order.estado}`);
     return NextResponse.json(order);
   } catch {
     return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });

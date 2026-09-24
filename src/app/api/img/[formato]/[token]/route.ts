@@ -6,6 +6,7 @@ const {
   ValidationError,
   SignatureError,
 } = require("../../../../../../melera-templates/generate");
+import { errorMessage, logEvent } from "@/lib/logs";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -33,7 +34,10 @@ export async function GET(
     if (error instanceof ValidationError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    console.error("Error renderizando imagen IG:", error);
+    await logEvent("imagen", `Falló el render de una imagen (${params.formato})`, {
+      nivel: "error",
+      detalle: { error: errorMessage(error) },
+    });
     return NextResponse.json(
       { error: `Error interno: ${error?.message}` },
       { status: 500 }

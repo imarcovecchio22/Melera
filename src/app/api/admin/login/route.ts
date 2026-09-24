@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSessionToken, setSessionCookie } from "@/lib/auth";
+import { logEvent } from "@/lib/logs";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -25,6 +26,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (usuario !== ADMIN_USER || password !== ADMIN_PASSWORD) {
+    await logEvent("admin", "Login fallido", {
+      nivel: "warn",
+      detalle: { usuario: String(usuario ?? "").slice(0, 80), ip: req.headers.get("x-forwarded-for") },
+    });
     return NextResponse.json(
       { error: "Usuario o contraseña incorrectos" },
       { status: 401 }
@@ -33,6 +38,7 @@ export async function POST(req: NextRequest) {
 
   const token = await createSessionToken(usuario);
   await setSessionCookie(token);
+  await logEvent("admin", `Login de ${usuario}`, { detalle: { ip: req.headers.get("x-forwarded-for") } });
 
   return NextResponse.json({ ok: true });
 }

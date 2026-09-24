@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPaymentClient } from "@/lib/mercadopago";
 import { applyPaymentStatusFromPayment } from "@/lib/orders";
+import { errorMessage, logEvent } from "@/lib/logs";
 
 export async function POST(req: NextRequest) {
   const url = new URL(req.url);
@@ -21,7 +22,10 @@ export async function POST(req: NextRequest) {
     await applyPaymentStatusFromPayment(payment);
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Error procesando webhook de MercadoPago:", error);
+    await logEvent("pago", `Error procesando el aviso de Mercado Pago del pago ${paymentId}`, {
+      nivel: "error",
+      detalle: { error: errorMessage(error) },
+    });
     return NextResponse.json({ received: true });
   }
 }

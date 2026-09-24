@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logEvent } from "@/lib/logs";
 
 const updateSchema = z.object({
   estado: z.enum(["nueva", "respondida", "archivada"]),
@@ -23,6 +24,7 @@ export async function PATCH(
       where: { id },
       data: { estado: parsed.data.estado },
     });
+    await logEvent("admin", `Consulta #${consulta.id}: marcada como ${consulta.estado}`);
     return NextResponse.json(consulta);
   } catch {
     return NextResponse.json({ error: "Consulta no encontrada" }, { status: 404 });

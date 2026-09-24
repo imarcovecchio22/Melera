@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logEvent } from "@/lib/logs";
 
 const updateSchema = z.object({
   productId: z.string().min(1),
@@ -20,6 +21,7 @@ export async function PATCH(req: NextRequest) {
       where: { id: parsed.data.productId },
       data: { stock: parsed.data.stock },
     });
+    await logEvent("admin", `Stock de ${product.nombre} cambiado a ${product.stock}`);
     return NextResponse.json(product);
   } catch {
     return NextResponse.json({ error: "Producto no encontrado" }, { status: 404 });

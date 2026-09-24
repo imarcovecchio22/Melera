@@ -91,3 +91,23 @@ model Consulta {
 
   @@index([estado, createdAt])
 }
+
+enum LogNivel {
+  info
+  warn
+  error
+}
+
+// Registro de eventos de la web (se ve en /admin/logs)
+model EventLog {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  nivel     LogNivel @default(info)
+  tipo      String // pedido, pago, consulta, telegram, admin, imagen
+  mensaje   String
+  detalle   Json?
+
+  @@index([createdAt])
+  @@index([nivel, createdAt])
+  @@index([tipo, createdAt])
+}

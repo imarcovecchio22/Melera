@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getPreferenceClient } from "@/lib/mercadopago";
 import { checkoutSchema } from "@/lib/validation";
 import { getMainProduct } from "@/lib/product";
+import { errorMessage, logEvent } from "@/lib/logs";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -22,6 +23,9 @@ export async function POST(req: NextRequest) {
   const product = await getMainProduct();
 
   if (data.cantidad > product.stock) {
+    await logEvent("pedido", `Compra rechazada por falta de stock (pidió ${data.cantidad}, hay ${product.stock})`, {
+      nivel: "warn",
+    });
     return NextResponse.json(
       { error: "No hay stock suficiente para esa cantidad" },
       { status: 400 }
@@ -47,6 +51,15 @@ export async function POST(req: NextRequest) {
       total,
       estado: "pendiente",
       origen: data.origen || null,
+    },
+  });
+
+  await logEvent("pedido", `Pedido #${order.numero} creado, esperando el pago`, {
+    detalle: {
+      cliente: `${order.nombre} ${order.apellido}`,
+      cantidad: order.cantidad,
+      total: order.total,
+      origen: order.origen,
     },
   });
 
@@ -95,7 +108,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ orderId: order.id, redirectUrl });
   } catch (error) {
-    console.error("Error creando preferencia de MercadoPago:", error);
+    await logEvent("pedido", `Pedido #${order.numero}: no se pudo iniciar el pago en Mercado Pago`, {
+      nivel: "error",
+      detalle: { error: errorMessage(error) },
+    });
     await prisma.order.update({
       where: { id: order.id },
       data: { estado: "cancelado" },

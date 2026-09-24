@@ -4,6 +4,7 @@ const {
   buildImageUrls,
   ValidationError,
 } = require("../../../../melera-templates/generate");
+import { errorMessage, logEvent } from "@/lib/logs";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -64,6 +65,10 @@ export async function POST(req: NextRequest) {
     if (body.tipo === "producto") {
       const problema = await checkImage(body.imagen_url);
       if (problema) {
+        await logEvent("imagen", `Post ${body.tipo}/${body.estilo} del ${body.fecha}: la foto no es una imagen`, {
+          nivel: "warn",
+          detalle: { imagen_url: body.imagen_url, problema },
+        });
         return NextResponse.json(
           { error: `imagen_url no es una imagen válida (${problema}): ${body.imagen_url}` },
           { status: 400 }
@@ -77,18 +82,31 @@ export async function POST(req: NextRequest) {
     urls = buildImageUrls(body, baseUrl);
   } catch (error: any) {
     if (error instanceof ValidationError) {
+      await logEvent("imagen", `Post ${body.tipo}/${body.estilo} del ${body.fecha}: ${error.message}`, {
+        nivel: "warn",
+      });
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    console.error("Error generando URLs IG:", error);
+    await logEvent("imagen", "Error armando las URLs de imagen", {
+      nivel: "error",
+      detalle: { error: errorMessage(error) },
+    });
     return NextResponse.json({ error: `Error interno: ${error?.message}` }, { status: 500 });
   }
 
   try {
     await Promise.all([warmImage(urls.image_url), warmImage(urls.story_image_url)]);
   } catch (error: any) {
-    console.error("Error renderizando imagen IG:", error);
+    await logEvent("imagen", `Post ${body.tipo}/${body.estilo} del ${body.fecha}: falló el render`, {
+      nivel: "error",
+      detalle: { error: errorMessage(error) },
+    });
     return NextResponse.json({ error: error.message }, { status: 502 });
   }
+
+  await logEvent("imagen", `Post ${body.tipo}/${body.estilo} del ${body.fecha} generado`, {
+    detalle: { feed: urls.image_url, story: urls.story_image_url },
+  });
 
   return NextResponse.json({
     ...urls,
