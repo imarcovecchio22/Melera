@@ -1,6 +1,6 @@
 # Melera
 
-Tienda online de miel artesanal — landing, ficha de producto, checkout con MercadoPago, sección de consultas y panel de administración de pedidos, stock y consultas. Incluye además el generador de imágenes de Instagram que usa la automatización de Make (ver `melera-templates/README.md`).
+Tienda online de miel artesanal — landing, ficha de producto, checkout con MercadoPago, sección de consultas, avisos por Telegram y panel de administración de pedidos, stock, consultas y logs. Incluye además el generador de imágenes de Instagram que usa la automatización de Make (ver `melera-templates/README.md`).
 
 ## Stack
 
@@ -17,7 +17,9 @@ Tienda online de miel artesanal — landing, ficha de producto, checkout con Mer
 - Integración con MercadoPago (Checkout Pro) y webhook de confirmación de pago
 - `/consultas`: preguntas frecuentes (precio real desde la base) + formulario mobile-first para quien llega desde Instagram/ManyChat (responder por Instagram o email, anti-spam con honeypot y tiempo mínimo). Cada consulta se guarda y se avisa por Telegram
 - `?origen=` (ej. `instagram` desde los botones de ManyChat) se guarda en las consultas y en los pedidos que pasan por `/producto` → Comprar → checkout
-- Panel `/admin` protegido: pedidos (estado, detalle, origen), stock y consultas (link directo a ig.me / mailto, marcar respondida, archivar). Fechas en hora de Argentina
+- Avisos por Telegram de pedidos pagados y consultas nuevas, directo desde la web al bot (`src/lib/telegram.ts`, sin Make). Diagnóstico en `GET/POST /api/admin/telegram` (dice si el bot está configurado y manda un mensaje de prueba)
+- Panel `/admin` protegido: pedidos (estado, detalle, origen), stock, consultas (link directo a ig.me / mailto, marcar respondida, archivar) y **logs**. Fechas en hora de Argentina
+- `/admin/logs`: registro de eventos de la web (pedidos, pagos, consultas, avisos de Telegram, logins y cambios del admin, imágenes de Instagram) con filtros en la URL: `?nivel=error`, `?tipo=pago`, `?q=texto`, `?pagina=2`. Se guarda 90 días. Para registrar algo nuevo: `logEvent(tipo, mensaje, { nivel, detalle })` de `src/lib/logs.ts` (nunca lanza error)
 - `/api/generate` + `/api/img/...`: imágenes de feed y story para Instagram, renderizadas con Chromium en Vercel
 
 ## Desarrollo local
