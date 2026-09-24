@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const {
-  generateImageUrl,
+  generateImageUrls,
   ValidationError,
   HctiError,
 } = require("../../../../melera-templates/generate");
@@ -21,9 +21,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const imageUrl = await generateImageUrl(body);
+    const { image_url, story_image_url } = await generateImageUrls(body);
     return NextResponse.json({
-      image_url: imageUrl,
+      image_url,
+      story_image_url,
       filename: `${body.fecha}_${body.estilo}-${body.tipo}.png`,
     });
   } catch (error: any) {

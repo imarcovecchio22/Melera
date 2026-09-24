@@ -18,21 +18,40 @@ const ESTILOS = ['organico', 'geo'];
 const TIPOS = ['presentacion', 'producto', 'dato'];
 
 const REQUIRED_FIELDS = {
-  presentacion: ['fecha', 'tagline', 'titulo', 'subtitulo', 'tag_inferior'],
-  producto: [
-    'fecha',
-    'categoria',
-    'nombre_producto',
-    'descripcion',
-    'caracteristica_1',
-    'caracteristica_2',
-    'caracteristica_3',
-    'precio',
-    'presentacion',
-    'cta',
-  ],
-  dato: ['fecha', 'intro_label', 'numero', 'sufijo', 'unidad', 'texto_dato', 'hashtags'],
+  presentacion: ['fecha', 'tagline', 'titulo', 'texto'],
+  producto: ['fecha', 'imagen_url', 'nombre_producto', 'caracteristicas', 'precio'],
+  dato: ['fecha', 'numero', 'texto_dato'],
 };
+
+// Tamaños de render: la misma plantilla se adapta sola a cada formato.
+const FORMATOS = {
+  feed: { viewport_width: 1080, viewport_height: 1350 },
+  story: { viewport_width: 1080, viewport_height: 1920 },
+};
+
+// Campos que aceptan <em>/<i> (cursiva color miel) y <br>.
+const RICH_FIELDS = ['titulo', 'nombre_producto'];
+
+// Adapta los nombres de campo viejos de la Sheet/Make a los de las plantillas nuevas.
+function normalizeData(data) {
+  const out = { ...data };
+  const has = (v) => v !== undefined && v !== null && String(v).trim() !== '';
+
+  if (!has(out.texto) && has(out.subtitulo)) out.texto = out.subtitulo;
+
+  if (!has(out.caracteristicas)) {
+    out.caracteristicas = ['caracteristica_1', 'caracteristica_2', 'caracteristica_3']
+      .map((k) => out[k])
+      .filter(has)
+      .join('|');
+  }
+
+  if (has(out.numero) && has(out.sufijo) && !String(out.numero).endsWith(out.sufijo)) {
+    out.numero = `${out.numero}${out.sufijo}`;
+  }
+
+  return out;
+}
 
 class ValidationError extends Error {
   constructor(message) {
@@ -102,6 +121,19 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+// Escapa todo y después rehabilita solo <em>, <i> y <br>.
+function escapeRichHtml(value) {
+  return escapeHtml(value)
+    .replace(/&lt;(\/?)(em|i)&gt;/gi, '<$1$2>')
+    .replace(/&lt;br\s*\/?&gt;/gi, '<br>');
+}
+
+// imagen_url va dentro de url('...') en el CSS: ahí no se decodifican entidades,
+// así que solo se sacan los caracteres que podrían romper la regla.
+function sanitizeCssUrl(value) {
+  return String(value).replace(/['"()\\<>\s]/g, (c) => encodeURIComponent(c));
+}
+
 function renderTemplate(html, data) {
   let rendered = html.replace(
     /\{\{#if\s+(\w+)\}\}([\s\S]*?)(?:\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g,
@@ -112,13 +144,16 @@ function renderTemplate(html, data) {
 
   rendered = rendered.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
     const value = data[varName];
-    return value === undefined || value === null ? '' : escapeHtml(value);
+    if (value === undefined || value === null) return '';
+    if (varName === 'imagen_url') return sanitizeCssUrl(value);
+    if (RICH_FIELDS.includes(varName)) return escapeRichHtml(value);
+    return escapeHtml(value);
   });
 
   return rendered;
 }
 
-async function callHcti(html) {
+async function callHcti(html, formato = 'feed') {
   const userId = process.env.HCTI_USER_ID;
   const apiKey = process.env.HCTI_API_KEY;
 
@@ -140,11 +175,11 @@ async function callHcti(html) {
       },
       body: JSON.stringify({
         html,
-        viewport_width: 1080,
-        viewport_height: 1080,
+        ...FORMATOS[formato],
         selector: 'body',
-        google_fonts:
-          'Playfair Display:400,400i,700|Lato:300,400|Space Grotesk:300,400,600,700',
+        // da tiempo a que carguen las fuentes y corra el script que achica textos largos
+        ms_delay: 500,
+        google_fonts: 'Fraunces:400,400i,500i,600,700|Poppins:400,500,600',
       }),
     });
   } catch (err) {
@@ -191,24 +226,40 @@ async function downloadImage(imageUrl, filePath) {
   fs.writeFileSync(filePath, buffer);
 }
 
-async function generateImageUrl(data) {
-  validateData(data);
-  const template = loadTemplate(data.estilo, data.tipo);
-  const html = renderTemplate(template, data);
-  return callHcti(html);
+function buildHtml(data) {
+  const normalized = normalizeData(data);
+  validateData(normalized);
+  const template = loadTemplate(normalized.estilo, normalized.tipo);
+  return renderTemplate(template, normalized);
+}
+
+async function generateImageUrl(data, formato = 'feed') {
+  return callHcti(buildHtml(data), formato);
+}
+
+// Genera feed (1080x1350) y story (1080x1920) con la misma plantilla.
+async function generateImageUrls(data) {
+  const html = buildHtml(data);
+  const [imageUrl, storyImageUrl] = await Promise.all([
+    callHcti(html, 'feed'),
+    callHcti(html, 'story'),
+  ]);
+  return { image_url: imageUrl, story_image_url: storyImageUrl };
 }
 
 async function generateImage(data) {
-  const imageUrl = await generateImageUrl(data);
-  const filename = `${data.fecha}_${data.estilo}-${data.tipo}.png`;
-  const filePath = path.join(OUTPUT_DIR, filename);
-  await downloadImage(imageUrl, filePath);
-  return { image_url: imageUrl, filename };
+  const urls = await generateImageUrls(data);
+  const base = `${data.fecha}_${data.estilo}-${data.tipo}`;
+  await downloadImage(urls.image_url, path.join(OUTPUT_DIR, `${base}.png`));
+  await downloadImage(urls.story_image_url, path.join(OUTPUT_DIR, `${base}_story.png`));
+  return { ...urls, filename: `${base}.png`, story_filename: `${base}_story.png` };
 }
 
 module.exports = {
   generateImage,
   generateImageUrl,
+  generateImageUrls,
+  normalizeData,
   validateData,
   renderTemplate,
   loadTemplate,
