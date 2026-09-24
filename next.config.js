@@ -5,7 +5,7 @@ const nextConfig = {
   },
   experimental: {
     outputFileTracingIncludes: {
-      "/api/generate": ["./melera-templates/*.html"],
+      "/api/generate": ["./melera-templates/*.html", "./melera-templates/logo.png"],
     },
   },
 };

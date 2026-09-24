@@ -226,8 +226,20 @@ async function downloadImage(imageUrl, filePath) {
   fs.writeFileSync(filePath, buffer);
 }
 
+let logoSrc;
+// Logo embebido como data URI (logo.png junto a las plantillas).
+function getLogoSrc() {
+  if (logoSrc === undefined) {
+    const logoPath = path.join(TEMPLATES_DIR, 'logo.png');
+    logoSrc = fs.existsSync(logoPath)
+      ? `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`
+      : '';
+  }
+  return logoSrc;
+}
+
 function buildHtml(data) {
-  const normalized = normalizeData(data);
+  const normalized = { ...normalizeData(data), logo_src: getLogoSrc() };
   validateData(normalized);
   const template = loadTemplate(normalized.estilo, normalized.tipo);
   return renderTemplate(template, normalized);
