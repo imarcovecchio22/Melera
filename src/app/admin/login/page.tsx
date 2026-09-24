@@ -25,10 +25,10 @@ function LoginForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ usuario, password }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        setError(data.error ?? "Error al iniciar sesión");
+        setError(data?.error ?? `Error del servidor (${res.status}). Intentá de nuevo.`);
         setLoading(false);
         return;
       }

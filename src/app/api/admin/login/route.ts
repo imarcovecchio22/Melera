@@ -16,6 +16,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Sin esto la sesión no se puede firmar y la ruta devolvía un 500 vacío.
+  if (!process.env.NEXTAUTH_SECRET) {
+    return NextResponse.json(
+      { error: "El servidor no tiene configurada la variable NEXTAUTH_SECRET." },
+      { status: 500 }
+    );
+  }
+
   if (usuario !== ADMIN_USER || password !== ADMIN_PASSWORD) {
     return NextResponse.json(
       { error: "Usuario o contraseña incorrectos" },
