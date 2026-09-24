@@ -6,7 +6,7 @@ Cada plantilla sirve para **feed y story**: el diseño se adapta solo según el 
 
 | Formato | Tamaño | Uso |
 |---|---|---|
-| Feed | 1080 × 1350 (4:5) | Post que se publica vía Buffer |
+| Feed | 1080 × 1350 (4:5) | Post del feed (Graph API de Meta) |
 | Story | 1080 × 1920 (9:16) | Story que se publica vía Graph API de Meta |
 
 ## Archivos
