@@ -9,6 +9,7 @@ const links = [
   { href: "/admin/stock", label: "Stock" },
   { href: "/admin/consultas", label: "Consultas" },
   { href: "/admin/instagram", label: "Instagram" },
+  { href: "/admin/autorespuestas", label: "Autorespuestas" },
   { href: "/admin/logs", label: "Logs" },
 ];
 

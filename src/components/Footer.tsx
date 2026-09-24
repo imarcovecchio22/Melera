@@ -38,7 +38,10 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-white/10 py-3 text-center text-xs text-[#8A6040]">
-        © {new Date().getFullYear()} Melera. Todos los derechos reservados.
+        © {new Date().getFullYear()} Melera. Todos los derechos reservados. ·{" "}
+        <Link href="/privacidad" className="underline underline-offset-2 hover:text-[#CBB392]">
+          Privacidad
+        </Link>
       </div>
     </footer>
   );

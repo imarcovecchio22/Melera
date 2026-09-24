@@ -22,6 +22,8 @@ Tienda online de miel artesanal — landing, ficha de producto, checkout con Mer
 - `/admin/logs`: registro de eventos de la web (pedidos, pagos, consultas, avisos de Telegram, logins y cambios del admin, imágenes de Instagram) con filtros en la URL: `?nivel=error`, `?tipo=pago`, `?q=texto`, `?pagina=2`. Se guarda 90 días. Para registrar algo nuevo: `logEvent(tipo, mensaje, { nivel, detalle })` de `src/lib/logs.ts` (nunca lanza error)
 - `/api/generate` + `/api/img/...`: imágenes de feed y story para Instagram, renderizadas con Chromium en Vercel (plantillas en `melera-templates/`)
 - **Instagram** (`/admin/instagram`): cronograma de posts en la base. Todos los días (Vercel Cron, 9–10 h Argentina) se generan los pendientes y llegan a Telegram con 4 botones (Feed, Historia, Feed + Historia, Descartar). Al tocar uno se publica directo con la Graph API de Meta. Ver "Instagram" más abajo
+- **Respuestas automáticas de Instagram** (`/admin/autorespuestas`, reemplazan a ManyChat): reglas por palabra clave para DMs y comentarios, con botones de link, Probador y registro de los mensajes recibidos. Ver "Respuestas automáticas" más abajo
+- `/privacidad`: política de privacidad (Meta la pide para pasar la app a Live)
 
 ## Desarrollo local
 
@@ -59,7 +61,10 @@ npm run dev                  # http://localhost:3000
 | `META_PAGE_TOKEN` | Token de la página de Facebook vinculada a Instagram (publica feed e historias). Vence cada ~60 días |
 | `META_IG_USER_ID` | Id de la cuenta de Instagram (`17841431194977725`) |
 | `TELEGRAM_WEBHOOK_SECRET` | Clave que Telegram manda en cada toque de botón (16+ caracteres: letras, números, `_` o `-`) |
-| `CRON_SECRET` | Clave con la que Vercel Cron llama a `/api/cron/instagram` |
+| `CRON_SECRET` | Clave con la que Vercel Cron llama a `/api/cron/instagram` y `/api/cron/instagram-token` |
+| `IG_APP_ID` / `IG_APP_SECRET` | App de Instagram (Instagram Login) de las respuestas automáticas. El secreto valida la firma del webhook |
+| `IG_WEBHOOK_VERIFY_TOKEN` | Texto al azar que se carga también en Meta al configurar el webhook |
+| `IG_ACCESS_TOKEN` / `IG_USER_ID` | Token de larga duración e id de @melera.miel para responder. Después se renueva solo y vive en la tabla `InstagramToken` |
 | `IG_DRY_RUN` | `true` = hace todo menos publicar en Instagram (para probar) |
 | `GEMINI_COPY_MODEL` | Opcional: modelo de Gemini para los textos (por defecto `gemini-flash-lite-latest`) |
 
@@ -88,6 +93,14 @@ Ver `.env.example` para el detalle completo.
 - **Aprobación:** Telegram llama a `/api/telegram/webhook` (clave secreta, solo el chat de Melera). Para que los botones lleguen a esta web hay que tocar una vez **"Conectar el bot a esta web"** en `/admin/instagram`.
 - **Código:** `src/lib/instagram/`. Los errores quedan en `/admin/logs?tipo=instagram` y llegan por Telegram.
 - **Previews:** el cron solo corre en producción. Para probar los botones en una preview, activar *Protection Bypass for Automation* en Vercel y usar `IG_DRY_RUN=true`.
+
+## Respuestas automáticas
+
+- **Configuración en Meta:** paso a paso en [`docs/instagram-setup.md`](docs/instagram-setup.md), incluido el orden para dejar ManyChat sin respuestas dobles.
+- **Webhook:** `/api/instagram/webhook` valida la firma `X-Hub-Signature-256`, responde 200 enseguida y procesa en segundo plano. Cada mensaje o comentario se registra en `InstagramEvento` por su id (un reintento de Meta no responde dos veces). No repite la misma regla a la misma persona por 12 h.
+- **Coincidencia:** sin tildes, mayúsculas ni signos, por palabra completa ("info" no coincide con "informal"). Gana la regla activa de mayor prioridad. `$PRECIO` en la respuesta se reemplaza por el precio actual del producto.
+- **Token:** `/api/cron/instagram-token` (diario) lo renueva cuando le quedan menos de 15 días; si falla, avisa por Telegram. Con 5 errores seguidos al responder también avisa.
+- **Código:** `src/lib/instagram/reglas.ts` (coincidencia, sin servidor: la usa también el Probador), `webhook.ts` (firma y lectura del aviso), `autorespuestas.ts` (procesamiento), `mensajes.ts` y `token.ts` (API de Instagram).
 
 ## Seguridad
 

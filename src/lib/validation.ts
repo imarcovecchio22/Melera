@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { esUrlPublicaHttps } from "@/lib/urls";
+import { parsearPalabrasClave } from "@/lib/instagram/reglas";
 
 export const checkoutSchema = z.object({
   nombre: z.string().trim().min(1, "Ingresá tu nombre"),
@@ -115,3 +116,45 @@ export const postIGSchema = z
   });
 
 export type PostIGInput = z.infer<typeof postIGSchema>;
+
+// ── Respuestas automáticas de Instagram ──
+
+// Los títulos de botón se cuentan por caracteres visibles (un emoji cuenta como uno).
+const largo = (s: string) => Array.from(s).length;
+
+export const botonReglaSchema = z.object({
+  titulo: z
+    .string()
+    .trim()
+    .min(1, "Cada botón necesita un título")
+    .refine((s) => largo(s) <= 20, "El título de un botón puede tener hasta 20 caracteres"),
+  url: z
+    .string()
+    .trim()
+    .url("La URL de un botón no es válida")
+    .refine((u) => u.startsWith("https://"), "La URL de un botón tiene que empezar con https://"),
+});
+
+export const autoRespuestaSchema = z.object({
+  nombre: z.string().trim().min(1, "Poné un nombre para reconocer la regla").max(80),
+  palabrasClave: z
+    .array(z.string())
+    .transform((lista) => parsearPalabrasClave(lista))
+    .refine((lista) => lista.length > 0, "Poné al menos una palabra clave"),
+  coincidencia: z.enum(["contiene", "exacta"]),
+  canal: z.enum(["dm", "comentario", "ambos"]),
+  respuesta: z.string().trim().min(1, "Escribí la respuesta").max(640, "La respuesta puede tener hasta 640 caracteres"),
+  botones: z.array(botonReglaSchema).max(3, "Hasta 3 botones"),
+  respuestaPublicaComentario: z
+    .string()
+    .trim()
+    .max(300, "La respuesta pública puede tener hasta 300 caracteres")
+    .transform((s) => s || null)
+    .nullable()
+    .optional()
+    .default(null),
+  prioridad: z.coerce.number().int().min(-100).max(1000),
+  activa: z.boolean(),
+});
+
+export type AutoRespuestaInput = z.infer<typeof autoRespuestaSchema>;

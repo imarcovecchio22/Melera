@@ -30,33 +30,33 @@ model Product {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  numero    Int         @default(autoincrement())
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id        String   @id @default(cuid())
+  numero    Int      @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Datos del cliente
-  nombre    String
-  apellido  String
-  email     String
-  telefono  String
+  nombre   String
+  apellido String
+  email    String
+  telefono String
 
   // Dirección de entrega
-  calle       String
-  numero_dir  String
-  pisoDepto   String?
-  localidad   String
-  provincia   String
+  calle        String
+  numero_dir   String
+  pisoDepto    String?
+  localidad    String
+  provincia    String
   codigoPostal String
 
   // Detalle del pedido
   productId String
-  product   Product     @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
   cantidad  Int
   total     Int
 
-  estado      OrderStatus @default(pendiente)
-  mpPaymentId String?
+  estado         OrderStatus @default(pendiente)
+  mpPaymentId    String?
   mpPreferenceId String?
 
   // ?origen= con el que llegó a /producto (ej: "instagram" desde ManyChat)
@@ -154,9 +154,9 @@ model PostIG {
   presentacion   String?
   imagenUrl      String?
 
-  estado  EstadoPostIG @default(pendiente)
-  copy    Json? // textos que escribió Gemini (tagline, titulo, etc.)
-  caption String?
+  estado   EstadoPostIG @default(pendiente)
+  copy     Json? // textos que escribió Gemini (tagline, titulo, etc.)
+  caption  String?
   feedUrl  String?
   storyUrl String?
 
@@ -172,4 +172,73 @@ model PostIG {
   updatedAt   DateTime  @updatedAt
 
   @@index([estado, fecha])
+}
+
+// ── Respuestas automáticas de Instagram (reemplazan a ManyChat) ──
+
+enum CoincidenciaRegla {
+  contiene // alguna palabra clave aparece como palabra completa en el mensaje
+  exacta // el mensaje entero es una de las palabras clave
+}
+
+enum CanalRegla {
+  dm
+  comentario
+  ambos
+}
+
+model AutoRespuesta {
+  id                         Int               @id @default(autoincrement())
+  nombre                     String // interno, para reconocerla en el admin
+  palabrasClave              String[]
+  coincidencia               CoincidenciaRegla @default(contiene)
+  canal                      CanalRegla        @default(ambos)
+  respuesta                  String // $PRECIO se reemplaza por el precio actual del producto
+  botones                    Json              @default("[]") // [{ titulo, url }] hasta 3
+  respuestaPublicaComentario String?
+  prioridad                  Int               @default(0) // gana la más alta
+  activa                     Boolean           @default(true)
+  createdAt                  DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
+  eventos                    InstagramEvento[]
+}
+
+enum TipoEventoIG {
+  dm
+  comentario
+}
+
+enum AccionEventoIG {
+  procesando // reservado apenas llega (así un reintento de Meta no responde dos veces)
+  respondido
+  sin_coincidencia
+  ignorado
+  error
+}
+
+// Cada mensaje o comentario recibido por el webhook de Instagram y qué se hizo con él
+model InstagramEvento {
+  id          Int            @id @default(autoincrement())
+  tipo        TipoEventoIG
+  externalId  String         @unique // mid del mensaje o id del comentario
+  usuarioIgId String
+  texto       String
+  reglaId     Int?
+  regla       AutoRespuesta? @relation(fields: [reglaId], references: [id], onDelete: SetNull)
+  accion      AccionEventoIG @default(procesando)
+  error       String?
+  createdAt   DateTime       @default(now())
+
+  @@index([createdAt])
+  @@index([usuarioIgId, reglaId, createdAt])
+}
+
+// Token de la API de Instagram (Instagram Login). Una sola fila (id = 1); se renueva sola.
+model InstagramToken {
+  id          Int       @id @default(1)
+  accessToken String
+  igUserId    String
+  expiresAt   DateTime? // null = todavía no se sabe (token recién cargado desde el entorno)
+  envHash     String? // huella del IG_ACCESS_TOKEN del que salió: si cambia en Vercel, se vuelve a tomar
+  updatedAt   DateTime  @updatedAt
 }
