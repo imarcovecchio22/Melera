@@ -1,5 +1,5 @@
 import ChatWidget from "@/components/ChatWidget";
-import Image from "next/image";
+import FotoFrasco from "@/components/FotoFrasco";
 import QuantitySelector from "@/components/QuantitySelector";
 import { getMainProduct } from "@/lib/product";
 import { formatPrecio } from "@/lib/utils";
@@ -17,27 +17,20 @@ export default async function ProductoPage({
 
   return (
     <>
-      <main className="flex-1 container-melera py-12 sm:py-16">
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="flex justify-center rounded-3xl bg-miel-50 p-10">
-            <Image
-              src="/producto-miel.png"
-              alt="Frasco de miel artesanal Melera"
-              width={433}
-              height={577}
-              priority
-              className="h-auto w-64 sm:w-80"
-            />
-          </div>
-          <div>
-            <h1 className="font-serif text-3xl font-semibold text-marron sm:text-4xl">
-              {product.nombre}
-            </h1>
-            <p className="mt-4 leading-relaxed text-stone-600">
-              {product.descripcion}
-            </p>
-            <p className="mt-6 font-serif text-4xl font-semibold text-miel-700">
-              {formatPrecio(product.precio)}
+      <main className="contenedor-panal flex-1 pb-16 pt-2 sm:pb-24">
+        <div className="mx-auto grid max-w-[1100px] items-center gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+          {/* La foto es la protagonista (y el LCP de la página) */}
+          <FotoFrasco
+            priority
+            sizes="(min-width: 1024px) 480px, 260px"
+            imgClassName="h-[42svh] w-auto lg:h-[min(72svh,640px)]"
+          />
+          <div className="velo-texto">
+            <h1 className="titulo-panal">{product.nombre}</h1>
+            <p className="texto-suave mt-4 leading-[1.65]">{product.descripcion}</p>
+            <p className="mt-6 flex items-baseline gap-2.5">
+              <span className="precio-panal text-[2.5rem]">{formatPrecio(product.precio)}</span>
+              <span className="texto-suave">el frasco de 500 g</span>
             </p>
             <div className="mt-8">
               <QuantitySelector stock={product.stock} origen={origen} />

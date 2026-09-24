@@ -25,7 +25,7 @@ export default function QuantitySelector({ stock, origen }: { stock: number; ori
 
   if (sinStock) {
     return (
-      <p className="inline-block rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700">
+      <p className="inline-block rounded-full border border-red-400/40 bg-red-950/60 px-4 py-2 text-sm font-semibold text-red-200">
         Sin stock por el momento
       </p>
     );
@@ -33,31 +33,33 @@ export default function QuantitySelector({ stock, origen }: { stock: number; ori
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-      <div className="flex items-center gap-3 rounded-full border border-stone-300 px-2 py-1">
+      <div className="flex w-fit items-center gap-3 rounded-full border border-[rgba(234,162,28,0.45)] bg-[rgba(14,6,2,0.6)] px-2 py-1">
         <button
           type="button"
           onClick={decrementar}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-lg font-semibold text-stone-600 transition hover:bg-miel-50 disabled:opacity-40"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-lg font-semibold text-[var(--ink)] transition hover:bg-white/10 disabled:opacity-40"
           disabled={cantidad <= 1}
           aria-label="Restar cantidad"
         >
           −
         </button>
-        <span className="w-6 text-center font-semibold">{cantidad}</span>
+        <span className="w-6 text-center font-semibold text-[var(--ink)]" aria-live="polite">{cantidad}</span>
         <button
           type="button"
           onClick={incrementar}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-lg font-semibold text-stone-600 transition hover:bg-miel-50 disabled:opacity-40"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-lg font-semibold text-[var(--ink)] transition hover:bg-white/10 disabled:opacity-40"
           disabled={cantidad >= stock}
           aria-label="Sumar cantidad"
         >
           +
         </button>
       </div>
-      <button type="button" onClick={comprar} className="btn-primary">
-        Comprar
-      </button>
-      <p className="text-sm text-stone-500">{stock} unidades disponibles</p>
+      <span className="wrap-focus w-fit">
+        <button type="button" onClick={comprar} className="btn-panal" data-bee-avoid>
+          Comprar
+        </button>
+      </span>
+      <p className="texto-suave text-sm">{stock} unidades disponibles</p>
     </div>
   );
 }

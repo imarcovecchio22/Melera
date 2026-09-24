@@ -66,6 +66,8 @@
     background: var(--wax-deep);
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
+    /* El velo del texto y el resplandor de la foto se extienden más allá del borde: sin scroll horizontal */
+    overflow-x: clip;
   }
   .tema-panal :focus-visible {
     outline: 2px solid var(--glow);
@@ -255,6 +257,68 @@
       opacity: 0;
       visibility: hidden;
     }
+  }
+
+  /* Velo radial oscuro detrás del texto sobre el panal (contraste AA, como el hero del prototipo) */
+  .velo-texto {
+    position: relative;
+    isolation: isolate;
+  }
+  .velo-texto::before {
+    content: "";
+    position: absolute;
+    inset: -22% -34% -28% -44%;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(closest-side, rgba(14, 6, 1, 0.8), rgba(14, 6, 1, 0.5) 58%, rgba(14, 6, 1, 0));
+  }
+
+  /* Foto del frasco "apoyada en el panal": resplandor cálido detrás y sombra suave */
+  .foto-frasco {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    isolation: isolate;
+  }
+  .foto-frasco::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 48%;
+    width: 130%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(closest-side, rgba(255, 196, 92, 0.42), rgba(234, 162, 28, 0.16) 52%, rgba(234, 162, 28, 0));
+  }
+  .foto-frasco img {
+    filter: drop-shadow(0 22px 28px rgba(8, 3, 0, 0.55)) drop-shadow(0 4px 8px rgba(8, 3, 0, 0.35));
+    /* La foto termina con la muñeca cortada en la esquina de abajo a la derecha: esa esquina se desvanece */
+    -webkit-mask-image: radial-gradient(ellipse 48% 36% at 100% 100%, transparent 44%, #000 100%);
+    mask-image: radial-gradient(ellipse 48% 36% at 100% 100%, transparent 44%, #000 100%);
+  }
+
+  .titulo-hero {
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2.3rem, 6.2vw, 5.2rem);
+    line-height: 1.02;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+  }
+  .precio-panal {
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--glow);
+  }
+  .etiqueta-seccion {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--honey);
   }
 
   .tarjeta-panal {

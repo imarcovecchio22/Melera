@@ -1,44 +1,41 @@
 import Link from "next/link";
-import Image from "next/image";
+import FotoFrasco from "@/components/FotoFrasco";
+import { formatPrecio } from "@/lib/utils";
 
-export default function Hero() {
+export default function Hero({ precio }: { precio: number }) {
   return (
-    <section className="overflow-hidden bg-gradient-to-b from-miel-50 to-crema">
-      <div className="container-melera grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2 lg:py-28">
-        <div className="order-2 text-center lg:order-1 lg:text-left">
-          <Image
-            src="/brand/melera-logo.png"
-            alt="Melera — Miel Artesanal, del campo a tu mesa"
-            width={1024}
-            height={1024}
-            priority
-            className="mx-auto mb-6 w-36 sm:w-44 lg:mx-0"
-          />
-          <h1 className="font-serif text-5xl font-medium leading-tight tracking-tight text-marron sm:text-6xl">
-            Miel artesanal, pura y natural
-          </h1>
-          <p className="mx-auto mt-4 max-w-md text-lg text-stone-600 lg:mx-0">
-            Producida por Apícola Mercedes en Tomás Jofré, Buenos Aires. Sin
-            aditivos, sin procesos industriales — tal cual sale de la colmena.
-          </p>
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
-            <Link href="/producto" className="btn-primary">
+    <section
+      aria-labelledby="titulo-hero"
+      className="contenedor-panal grid min-h-[calc(100svh-80px)] content-center gap-5 pb-[clamp(36px,8vh,100px)] pt-1 sm:min-h-[calc(100svh-92px)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center lg:gap-10"
+    >
+      {/* Mobile: la foto arriba del título (hasta 34svh). Escritorio: a la derecha, grande. */}
+      <FotoFrasco
+        priority
+        sizes="(min-width: 1024px) 460px, 260px"
+        className="lg:order-2"
+        imgClassName="h-[34svh] w-auto lg:h-[min(68svh,600px)]"
+      />
+      <div className="velo-texto max-w-[37rem] lg:order-1">
+        <h1 id="titulo-hero" className="titulo-hero mb-[1.15rem]">
+          Miel artesanal, pura y natural
+        </h1>
+        <p className="texto-suave mb-6 max-w-[31rem] text-[clamp(1rem,1.25vw,1.13rem)] leading-[1.65]">
+          Producida por Apícola Mercedes en Tomás Jofré, Buenos Aires. Sin aditivos, sin procesos
+          industriales — tal cual sale de la colmena.
+        </p>
+        <p className="mb-[1.6rem] flex items-baseline gap-2.5">
+          <span className="precio-panal text-[2.3rem]">{formatPrecio(precio)}</span>
+          <span className="texto-suave">el frasco de 500 g</span>
+        </p>
+        <div className="flex flex-wrap items-center gap-x-[1.4rem] gap-y-3">
+          <span className="wrap-focus">
+            <Link href="/producto" className="btn-panal" data-bee-avoid>
               Comprar ahora
             </Link>
-            <Link href="/#nosotros" className="btn-secondary">
-              Conocé nuestra historia
-            </Link>
-          </div>
-        </div>
-        <div className="order-1 flex justify-center lg:order-2">
-          <Image
-            src="/producto-miel.png"
-            alt="Frasco de miel artesanal Melera"
-            width={433}
-            height={577}
-            priority
-            className="h-auto w-64 sm:w-80 lg:w-96"
-          />
+          </span>
+          <Link href="/#nosotros" className="btn-ghost">
+            Conocé nuestra historia
+          </Link>
         </div>
       </div>
     </section>

@@ -139,6 +139,7 @@ export default function ChatWidget() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Cerrar chat" : "Abrir chat"}
+        data-bee-avoid
         className="flex h-14 w-14 items-center justify-center rounded-full bg-miel-600 text-2xl text-crema shadow-soft transition hover:bg-miel-700"
       >
         {open ? "✕" : "🐝"}

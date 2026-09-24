@@ -12,7 +12,7 @@ export default async function HomePage() {
   return (
     <>
       <main className="flex-1">
-        <Hero />
+        <Hero precio={product.precio} />
         <QuienesSomos />
         <ProductoSection product={product} />
       </main>

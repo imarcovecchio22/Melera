@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import FotoFrasco from "@/components/FotoFrasco";
 import { formatPrecio } from "@/lib/utils";
 import type { Product } from "@prisma/client";
 
@@ -7,36 +7,24 @@ export default function ProductoSection({ product }: { product: Product }) {
   const sinStock = product.stock <= 0;
 
   return (
-    <section id="producto" className="bg-miel-50 py-16 sm:py-24">
-      <div className="container-melera grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        <div className="flex justify-center rounded-3xl bg-white p-10 shadow-soft">
-          <Image
-            src="/producto-miel.png"
-            alt="Frasco de miel artesanal Melera"
-            width={433}
-            height={577}
-            className="h-auto w-56 sm:w-72"
-          />
-        </div>
+    <section id="producto" className="contenedor-panal scroll-mt-4 bg-[rgba(18,7,2,0.93)] py-[clamp(56px,8vw,96px)]">
+      <div className="grid max-w-[1100px] items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        <FotoFrasco sizes="(min-width: 1024px) 288px, 224px" imgClassName="h-auto w-56 sm:w-72" />
         <div>
-          <span className="text-sm font-semibold uppercase tracking-wide text-miel-600">
-            Nuestro producto
-          </span>
-          <h2 className="mt-2 font-serif text-3xl font-semibold text-marron sm:text-4xl">
-            {product.nombre}
-          </h2>
-          <p className="mt-4 text-stone-600">{product.descripcion}</p>
-          <p className="mt-6 font-serif text-4xl font-semibold text-miel-700">
-            {formatPrecio(product.precio)}
-          </p>
+          <span className="etiqueta-seccion">Nuestro producto</span>
+          <h2 className="titulo-panal mt-2">{product.nombre}</h2>
+          <p className="texto-suave mt-4 leading-[1.65]">{product.descripcion}</p>
+          <p className="precio-panal mt-6 text-4xl">{formatPrecio(product.precio)}</p>
           {sinStock ? (
-            <p className="mt-6 inline-block rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700">
+            <p className="mt-6 inline-block rounded-full border border-red-400/40 bg-red-950/60 px-4 py-2 text-sm font-semibold text-red-200">
               Sin stock por el momento
             </p>
           ) : (
-            <Link href="/producto" className="btn-primary mt-6">
-              Comprar ahora
-            </Link>
+            <span className="wrap-focus mt-6">
+              <Link href="/producto" className="btn-panal" data-bee-avoid>
+                Comprar ahora
+              </Link>
+            </span>
           )}
         </div>
       </div>
