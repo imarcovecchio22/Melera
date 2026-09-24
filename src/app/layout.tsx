@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Poppins, Fraunces, Caveat } from "next/font/google";
+import { Poppins, Fraunces } from "next/font/google";
 import "./globals.css";
 
 const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   variable: "--font-poppins",
   display: "swap",
 });
@@ -14,13 +14,6 @@ const fraunces = Fraunces({
   weight: ["400", "500", "600"],
   style: ["normal", "italic"],
   variable: "--font-fraunces",
-  display: "swap",
-});
-
-const caveat = Caveat({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  variable: "--font-caveat",
   display: "swap",
 });
 
@@ -65,7 +58,7 @@ export default function RootLayout({
   return (
     <html lang="es" data-scroll-behavior="smooth">
       <body
-        className={`${poppins.variable} ${fraunces.variable} ${caveat.variable} flex min-h-screen flex-col font-sans`}
+        className={`${poppins.variable} ${fraunces.variable} flex min-h-screen flex-col font-sans`}
       >
         {children}
       </body>

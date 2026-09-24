@@ -1,5 +1,3 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 import Image from "next/image";
 import QuantitySelector from "@/components/QuantitySelector";
@@ -19,7 +17,6 @@ export default async function ProductoPage({
 
   return (
     <>
-      <Header />
       <main className="flex-1 container-melera py-12 sm:py-16">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="flex justify-center rounded-3xl bg-miel-50 p-10">
@@ -48,7 +45,6 @@ export default async function ProductoPage({
           </div>
         </div>
       </main>
-      <Footer />
       <ChatWidget />
     </>
   );

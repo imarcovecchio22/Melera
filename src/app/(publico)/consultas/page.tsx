@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import ConsultaForm from "@/components/ConsultaForm";
 import { getMainProduct } from "@/lib/product";
 import { formatPrecio } from "@/lib/utils";
@@ -59,7 +57,6 @@ export default async function ConsultasPage({
 
   return (
     <>
-      <Header />
       <main className="flex-1 container-melera py-10 sm:py-16">
         <div className="mx-auto max-w-2xl">
           <h1 className="section-title">¿Tenés alguna consulta?</h1>
@@ -107,7 +104,6 @@ export default async function ConsultasPage({
           </p>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

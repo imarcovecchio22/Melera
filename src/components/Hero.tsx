@@ -14,7 +14,7 @@ export default function Hero() {
             priority
             className="mx-auto mb-6 w-36 sm:w-44 lg:mx-0"
           />
-          <h1 className="font-caveat text-6xl font-bold leading-tight text-marron sm:text-7xl">
+          <h1 className="font-serif text-5xl font-medium leading-tight tracking-tight text-marron sm:text-6xl">
             Miel artesanal, pura y natural
           </h1>
           <p className="mx-auto mt-4 max-w-md text-lg text-stone-600 lg:mx-0">

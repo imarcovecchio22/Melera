@@ -3,26 +3,31 @@ import Image from "next/image";
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-miel-100 bg-crema/90 backdrop-blur">
-      <div className="container-melera flex h-16 items-center justify-between gap-3">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <Image src="/brand/melera-logo.png" alt="Melera" width={48} height={48} priority />
+    <header className="contenedor-panal relative z-10 flex items-center justify-between gap-4 py-4 sm:py-6">
+      <Link
+        href="/"
+        aria-label="Melera, inicio"
+        className="flex shrink-0 items-center gap-2.5 rounded-md font-serif text-[1.4rem] font-semibold tracking-[-0.01em] text-[var(--ink)]"
+      >
+        <Image src="/brand/melera-icono-dark.svg" alt="" width={36} height={36} unoptimized className="h-9 w-9" />
+        <span>Melera</span>
+      </Link>
+      <nav aria-label="Principal" className="flex items-center gap-[clamp(0.8rem,2vw,1.6rem)]">
+        <Link href="/#producto" className="link-panal hidden sm:inline">
+          Producto
         </Link>
-        <nav className="flex items-center gap-4 text-sm font-medium text-stone-600 sm:gap-6">
-          <Link href="/#producto" className="hidden hover:text-miel-600 sm:inline">
-            Producto
-          </Link>
-          <Link href="/#nosotros" className="hidden hover:text-miel-600 sm:inline">
-            Quiénes somos
-          </Link>
-          <Link href="/consultas" className="hover:text-miel-600">
-            Consultas
-          </Link>
-          <Link href="/producto" className="btn-primary !px-4 !py-2 text-sm">
+        <Link href="/#nosotros" className="link-panal hidden sm:inline">
+          Quiénes somos
+        </Link>
+        <Link href="/consultas" className="link-panal hidden sm:inline">
+          Consultas
+        </Link>
+        <span className="wrap-focus">
+          <Link href="/producto" className="btn-panal btn-panal-sm" data-bee-avoid>
             Comprar
           </Link>
-        </nav>
-      </div>
+        </span>
+      </nav>
     </header>
   );
 }

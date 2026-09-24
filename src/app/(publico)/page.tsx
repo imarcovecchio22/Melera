@@ -1,5 +1,3 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 import Hero from "@/components/Hero";
 import QuienesSomos from "@/components/QuienesSomos";
@@ -13,13 +11,11 @@ export default async function HomePage() {
 
   return (
     <>
-      <Header />
       <main className="flex-1">
         <Hero />
         <QuienesSomos />
         <ProductoSection product={product} />
       </main>
-      <Footer />
       <ChatWidget />
     </>
   );

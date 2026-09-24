@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Política de privacidad | Melera",
@@ -14,7 +12,6 @@ const ACTUALIZADA = "25 de septiembre de 2026";
 export default function PrivacidadPage() {
   return (
     <>
-      <Header />
       <main className="flex-1 container-melera py-10 sm:py-16">
         <article className="mx-auto max-w-2xl space-y-6 leading-relaxed text-stone-700">
           <div>
@@ -88,7 +85,6 @@ export default function PrivacidadPage() {
           </section>
         </article>
       </main>
-      <Footer />
     </>
   );
 }

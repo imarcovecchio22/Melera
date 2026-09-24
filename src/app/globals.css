@@ -2,9 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Paleta del panal (prototipo aprobado). Solo la usan las páginas públicas (.tema-panal). */
+:root {
+  --wax-deep: #140803;
+  --wax: #2b1507;
+  --wall: #4e2d10;
+  --amber: #b8650a;
+  --honey: #eaa21c;
+  --glow: #ffd27a;
+  --cream: #f4e4c1;
+  --ink: #f7ebd3;
+  --ink-soft: #dcc7a0;
+  --on-honey: #2a1405;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Con el panal, el fondo del documento también es oscuro (sin destellos crema al hacer scroll). */
+  :root:has(.tema-panal) {
+    color-scheme: dark;
+    background: var(--wax-deep);
+  }
+  :root:has(.tema-panal) body {
+    background: var(--wax-deep);
+    color: var(--ink);
   }
 
   body {
@@ -35,5 +59,141 @@
 
   .container-melera {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* ── Páginas públicas con el panal ── */
+  .tema-panal {
+    background: var(--wax-deep);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .tema-panal :focus-visible {
+    outline: 2px solid var(--glow);
+    outline-offset: 3px;
+  }
+
+  /* Ancho y márgenes laterales del prototipo */
+  .contenedor-panal {
+    width: 100%;
+    padding-inline: clamp(20px, 5vw, 64px);
+  }
+
+  /* Botón hexagonal, como una celda */
+  .btn-panal {
+    --cut: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 54px;
+    padding: 0 2.1rem;
+    background: var(--honey);
+    color: var(--on-honey);
+    font: 600 1.02rem/1 var(--font-poppins), system-ui, sans-serif;
+    text-decoration: none;
+    border: 0;
+    cursor: pointer;
+    clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%);
+    transition: background-color 0.18s ease, transform 0.12s ease;
+  }
+  .btn-panal:hover {
+    background: var(--glow);
+  }
+  .btn-panal:active {
+    transform: translateY(1px);
+  }
+  .btn-panal:focus-visible {
+    outline: none;
+    background: var(--glow);
+  }
+  .btn-panal:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  .btn-panal-sm {
+    --cut: 12px;
+    min-height: 42px;
+    padding: 0 1.35rem;
+    font-size: 0.95rem;
+  }
+  /* El clip-path recorta el outline: el foco se marca con un resplandor en el contenedor */
+  .wrap-focus {
+    display: inline-flex;
+    border-radius: 4px;
+  }
+  .wrap-focus:focus-within {
+    filter: drop-shadow(0 0 5px var(--glow)) drop-shadow(0 0 1px var(--cream));
+  }
+
+  /* Enlace con subrayado de miel (acción secundaria) */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    min-height: 54px;
+    padding: 0 0.4rem;
+    color: var(--ink);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: rgba(234, 162, 28, 0.6);
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    border-radius: 6px;
+  }
+  .btn-ghost:hover {
+    text-decoration-color: var(--glow);
+  }
+
+  .link-panal {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.4rem 0.2rem;
+    border-radius: 6px;
+  }
+  .link-panal:hover {
+    color: var(--ink);
+  }
+
+  .titulo-panal {
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(1.8rem, 3.4vw, 2.7rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .texto-suave {
+    color: var(--ink-soft);
+  }
+
+  /* Formularios sobre fondo oscuro */
+  .campo-panal {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid rgba(234, 162, 28, 0.35);
+    background: rgba(14, 6, 2, 0.75);
+    color: var(--ink);
+    padding: 0.7rem 1rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .campo-panal::placeholder {
+    color: rgba(220, 199, 160, 0.55);
+  }
+  .campo-panal:focus {
+    border-color: var(--honey);
+    box-shadow: 0 0 0 3px rgba(234, 162, 28, 0.25);
+  }
+  .etiqueta-panal {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  .tarjeta-panal {
+    border-radius: 16px;
+    border: 1px solid rgba(234, 162, 28, 0.22);
+    background: rgba(26, 12, 4, 0.82);
   }
 }
