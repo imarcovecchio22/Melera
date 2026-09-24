@@ -28,8 +28,17 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const body = await req.json().catch(() => null);
-  if (!body) {
+  // Make lo manda como formulario (así Gemini puede escribir comillas o saltos de línea
+  // sin romper el JSON); también se acepta JSON.
+  const contentType = req.headers.get("content-type") || "";
+  const body = contentType.includes("application/x-www-form-urlencoded")
+    ? Object.fromEntries(
+        Array.from((await req.formData().catch(() => new FormData())).entries()).map(
+          ([key, value]) => [key, String(value)]
+        )
+      )
+    : await req.json().catch(() => null);
+  if (!body || !Object.keys(body).length) {
     return NextResponse.json({ error: "Body inválido" }, { status: 400 });
   }
 
