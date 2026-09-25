@@ -58,9 +58,9 @@ export function elegirRegla<T extends ReglaParaCoincidir>(texto: string, canal: 
   );
 }
 
-/** Reemplaza $PRECIO por el precio ya formateado. */
-export function armarTextoRespuesta(respuesta: string, precioFormateado: string) {
-  return respuesta.replace(/\$PRECIO/g, precioFormateado);
+/** Reemplaza $PRECIO por el precio y $PROMOS por las promos por cantidad (ya formateados). */
+export function armarTextoRespuesta(respuesta: string, precioFormateado: string, promos = "") {
+  return respuesta.replace(/\$PRECIO/g, precioFormateado).replace(/\$PROMOS/g, promos);
 }
 
 /** Lee la columna Json de botones sin confiar en su forma. */

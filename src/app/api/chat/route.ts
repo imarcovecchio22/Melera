@@ -3,6 +3,7 @@ import { logEvent } from "@/lib/logs";
 import { clientIp, demasiadosIntentos } from "@/lib/security";
 import { getMainProduct } from "@/lib/product";
 import { formatPrecio } from "@/lib/utils";
+import { leerEscalones, textoPromos } from "@/lib/precios";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,11 +18,12 @@ const MAX_MENSAJES_POR_IP = 20;
 const VENTANA_MINUTOS = 10;
 
 /** Instrucciones del asistente, con el precio actual del frasco (se edita en /admin/stock). */
-function buildSystemPrompt(precio: string) {
+function buildSystemPrompt(precio: string, promos: string) {
   return `Sos el asistente virtual de Melera, una marca de miel artesanal de Tomás Jofré, Buenos Aires. Respondés preguntas de clientes de forma amigable, breve y en español rioplatense informal (tuteás). Solo respondés preguntas relacionadas con Melera y la miel. Si te preguntan algo que no tiene que ver, redirigís amablemente.
 
 Información que conocés:
-- Producto: Miel Artesanal 500g, frasco de vidrio, ${precio}
+- Producto: Miel Artesanal 500g, frasco de vidrio, ${precio}${promos ? `
+- Promos por cantidad (el precio baja para cada frasco): ${promos}. Se aplican solas en la web al elegir la cantidad.` : ""}
 - Elaboración: producida por Apícola Mercedes en Tomás Jofré, Bs As. 100% artesanal, sin aditivos, sin procesos industriales, sin azúcar agregada, sin conservantes. Las abejas recolectan néctar de flores silvestres de la zona.
 - Envíos: por ahora solo dentro de CABA. Después de la compra, alguien del equipo de Melera le escribe para coordinar el envío. Pronto se suman más zonas; si la persona está fuera de CABA, que escriba en melera.vercel.app/consultas y le avisamos.
 - Pago: online con Mercado Pago, al finalizar la compra en la web.
@@ -84,7 +86,9 @@ export async function POST(req: Request) {
   await logEvent("chat", "Mensaje al chat", { detalle: { ip } });
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const precio = formatPrecio((await getMainProduct()).precio);
+  const producto = await getMainProduct();
+  const precio = formatPrecio(producto.precio);
+  const promos = textoPromos(leerEscalones(producto.escalones));
 
   const contents = messages.map((m) => ({
     role: m.role === "assistant" ? ("model" as const) : ("user" as const),
@@ -98,7 +102,7 @@ export async function POST(req: Request) {
         const geminiStream = await ai.models.generateContentStream({
           model: MODEL,
           contents,
-          config: { systemInstruction: buildSystemPrompt(precio) },
+          config: { systemInstruction: buildSystemPrompt(precio, promos) },
         });
 
         for await (const chunk of geminiStream) {

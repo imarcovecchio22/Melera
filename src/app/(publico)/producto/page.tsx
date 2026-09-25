@@ -3,6 +3,7 @@ import FotoFrasco from "@/components/FotoFrasco";
 import QuantitySelector from "@/components/QuantitySelector";
 import { getMainProduct } from "@/lib/product";
 import { formatPrecio } from "@/lib/utils";
+import { leerEscalones, textoPromos } from "@/lib/precios";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export default async function ProductoPage({
   const searchParams = await searchParamsPromise;
   const product = await getMainProduct();
   const origen = Array.isArray(searchParams.origen) ? searchParams.origen[0] : searchParams.origen;
+  const escalones = leerEscalones(product.escalones);
 
   return (
     <>
@@ -32,8 +34,11 @@ export default async function ProductoPage({
               <span className="precio-panal text-[2.5rem]">{formatPrecio(product.precio)}</span>
               <span className="texto-suave">el frasco de 500 g</span>
             </p>
+            {escalones.length > 0 && (
+              <p className="mt-2 text-sm font-semibold text-[var(--glow)]">Promo: {textoPromos(escalones)}</p>
+            )}
             <div className="mt-8">
-              <QuantitySelector stock={product.stock} origen={origen} />
+              <QuantitySelector stock={product.stock} origen={origen} precio={product.precio} escalones={escalones} />
             </div>
           </div>
         </div>

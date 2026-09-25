@@ -1,6 +1,7 @@
 import Link from "next/link";
 import FotoFrasco from "@/components/FotoFrasco";
 import { formatPrecio } from "@/lib/utils";
+import { leerEscalones, textoPromos } from "@/lib/precios";
 import type { Product } from "@prisma/client";
 
 export default function ProductoSection({ product }: { product: Product }) {
@@ -15,6 +16,11 @@ export default function ProductoSection({ product }: { product: Product }) {
           <h2 className="titulo-panal mt-2">{product.nombre}</h2>
           <p className="texto-suave mt-4 leading-[1.65]">{product.descripcion}</p>
           <p className="precio-panal mt-6 text-4xl">{formatPrecio(product.precio)}</p>
+          {leerEscalones(product.escalones).length > 0 && (
+            <p className="mt-2 text-sm font-semibold text-[var(--glow)]">
+              Promo: {textoPromos(leerEscalones(product.escalones))}
+            </p>
+          )}
           {sinStock ? (
             <p className="mt-6 inline-block rounded-full border border-red-400/40 bg-red-950/60 px-4 py-2 text-sm font-semibold text-red-200">
               Sin stock por el momento

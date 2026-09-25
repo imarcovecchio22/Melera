@@ -4,6 +4,7 @@ import { formatFecha, formatPrecio, haceMs } from "@/lib/utils";
 import { getMainProduct } from "@/lib/product";
 import { siteUrl } from "@/lib/telegram";
 import { leerBotones } from "@/lib/instagram/reglas";
+import { leerEscalones, textoPromos } from "@/lib/precios";
 import { HORAS_ENTRE_RESPUESTAS } from "@/lib/instagram/autorespuestas";
 import { diasRestantes, getInstagramToken, RENOVAR_DIAS_ANTES } from "@/lib/instagram/token";
 import AutoRespuestaForm, { type AutoRespuestaValores } from "@/components/admin/AutoRespuestaForm";
@@ -136,7 +137,7 @@ export default async function AdminAutoRespuestasPage() {
         <h2 className="font-serif text-lg font-semibold text-marron">Probador</h2>
         <p className="mb-3 text-sm text-stone-500">Escribí un mensaje de ejemplo: muestra qué se respondería, sin mandar nada.</p>
         <div className="rounded-xl border border-miel-100 bg-white p-5 shadow-soft">
-          <ProbadorRespuestas reglas={reglasProbador} precio={formatPrecio(product.precio)} />
+          <ProbadorRespuestas reglas={reglasProbador} precio={formatPrecio(product.precio)} promos={textoPromos(leerEscalones(product.escalones))} />
         </div>
       </section>
 

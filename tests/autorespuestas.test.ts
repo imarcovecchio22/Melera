@@ -89,6 +89,11 @@ describe("elegirRegla", () => {
 });
 
 describe("armado de la respuesta", () => {
+  it("reemplaza $PROMOS por las promos por cantidad", () => {
+    expect(armarTextoRespuesta("Frasco a $PRECIO. Promos: $PROMOS", "$ 6.500", "5 frascos a $ 30.000")).toBe("Frasco a $ 6.500. Promos: 5 frascos a $ 30.000");
+    expect(armarTextoRespuesta("Promos: $PROMOS", "$ 6.500")).toBe("Promos: ");
+  });
+
   it("reemplaza $PRECIO", () => {
     expect(armarTextoRespuesta("Frasco a $PRECIO. Dos a 2x$PRECIO", "$ 6.500")).toBe("Frasco a $ 6.500. Dos a 2x$ 6.500");
   });

@@ -1,8 +1,9 @@
 import Link from "next/link";
 import FotoFrasco from "@/components/FotoFrasco";
 import { formatPrecio } from "@/lib/utils";
+import { textoPromos, type Escalon } from "@/lib/precios";
 
-export default function Hero({ precio }: { precio: number }) {
+export default function Hero({ precio, escalones = [] }: { precio: number; escalones?: Escalon[] }) {
   return (
     <section
       aria-labelledby="titulo-hero"
@@ -23,10 +24,13 @@ export default function Hero({ precio }: { precio: number }) {
           Producida por Apícola Mercedes en Tomás Jofré, Buenos Aires. Sin aditivos, sin procesos
           industriales — tal cual sale de la colmena.
         </p>
-        <p className="mb-[1.6rem] flex items-baseline gap-2.5">
+        <p className={`flex items-baseline gap-2.5 ${escalones.length ? "mb-1" : "mb-[1.6rem]"}`}>
           <span className="precio-panal text-[2.3rem]">{formatPrecio(precio)}</span>
           <span className="texto-suave">el frasco de 500 g</span>
         </p>
+        {escalones.length > 0 && (
+          <p className="mb-[1.6rem] text-sm font-semibold text-[var(--glow)]">Promo: {textoPromos(escalones)}</p>
+        )}
         <div className="flex flex-wrap items-center gap-x-[1.4rem] gap-y-3">
           <span className="wrap-focus">
             <Link href="/producto" className="btn-panal" data-bee-avoid>

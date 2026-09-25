@@ -4,6 +4,7 @@ import { errorMessage, logEvent } from "@/lib/logs";
 import { sendTelegramMessage, siteUrl } from "@/lib/telegram";
 import { getMainProduct } from "@/lib/product";
 import { formatPrecio } from "@/lib/utils";
+import { leerEscalones, textoPromos } from "@/lib/precios";
 import { armarTextoRespuesta, elegirRegla, leerBotones } from "@/lib/instagram/reglas";
 import { enviarDm, enviarRespuestaPrivada, responderComentario } from "@/lib/instagram/mensajes";
 import type { EventoEntrante } from "@/lib/instagram/webhook";
@@ -70,9 +71,11 @@ export async function procesarEvento(ev: EventoEntrante) {
       return;
     }
 
-    const texto = regla.respuesta.includes("$PRECIO")
-      ? armarTextoRespuesta(regla.respuesta, formatPrecio((await getMainProduct()).precio))
-      : regla.respuesta;
+    let texto = regla.respuesta;
+    if (texto.includes("$PRECIO") || texto.includes("$PROMOS")) {
+      const producto = await getMainProduct();
+      texto = armarTextoRespuesta(texto, formatPrecio(producto.precio), textoPromos(leerEscalones(producto.escalones)));
+    }
     const botones = leerBotones(regla.botones);
 
     if (ev.tipo === "dm") {

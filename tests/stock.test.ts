@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const db = vi.hoisted(() => ({ findUniqueOrThrow: vi.fn(), update: vi.fn() }));
+const db = vi.hoisted(() => ({ findUnique: vi.fn(), update: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({ prisma: { product: db } }));
 const logs = vi.hoisted(() => ({ logEvent: vi.fn(async (tipo: string, mensaje: string) => void [tipo, mensaje]) }));
 vi.mock("@/lib/logs", () => logs);
@@ -13,8 +13,8 @@ const pedido = (body: unknown) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
-  db.findUniqueOrThrow.mockResolvedValue({ id: "p1", nombre: "Miel", precio: 6500, stock: 10 });
-  db.update.mockImplementation(async ({ data }) => ({ id: "p1", nombre: "Miel", precio: 6500, stock: 10, ...data }));
+  db.findUnique.mockResolvedValue({ id: "p1", nombre: "Miel", precio: 6500, stock: 10, escalones: [] });
+  db.update.mockImplementation(async ({ data }) => ({ id: "p1", nombre: "Miel", precio: 6500, stock: 10, escalones: [], ...data }));
 });
 
 describe("/api/admin/stock", () => {
@@ -29,6 +29,27 @@ describe("/api/admin/stock", () => {
   it("sin precio solo cambia el stock (compatible con pedidos viejos)", async () => {
     await PATCH(pedido({ productId: "p1", stock: 3 }));
     expect(db.update).toHaveBeenCalledWith({ where: { id: "p1" }, data: { stock: 3 } });
+  });
+
+  it("guarda las promos por cantidad ordenadas y las registra", async () => {
+    const res = await PATCH(pedido({ productId: "p1", stock: 10, escalones: [{ desde: 10, precio: 5500 }, { desde: 5, precio: 6000 }] }));
+    expect(res.status).toBe(200);
+    expect(db.update.mock.calls[0][0].data.escalones).toEqual([{ desde: 5, precio: 6000 }, { desde: 10, precio: 5500 }]);
+    expect(logs.logEvent.mock.calls.some((c) => /Promos de Miel: 5 frascos a .*30\.000 · 10 frascos a .*55\.000/.test(c[1]))).toBe(true);
+  });
+
+  it("rechaza promos que no bajan el precio o repiten cantidad", async () => {
+    for (const escalones of [
+      [{ desde: 5, precio: 7000 }], // más cara que el precio base
+      [{ desde: 5, precio: 6000 }, { desde: 10, precio: 6200 }], // la de 10 más cara que la de 5
+      [{ desde: 5, precio: 6000 }, { desde: 5, precio: 5500 }], // cantidad repetida
+      [{ desde: 1, precio: 6000 }], // desde 1 frasco no es promo
+    ]) {
+      const res = await PATCH(pedido({ productId: "p1", stock: 10, escalones }));
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBeTruthy();
+    }
+    expect(db.update).not.toHaveBeenCalled();
   });
 
   it("rechaza precios inválidos con un mensaje claro", async () => {

@@ -3,6 +3,7 @@ import Link from "next/link";
 import ConsultaForm from "@/components/ConsultaForm";
 import { getMainProduct } from "@/lib/product";
 import { formatPrecio } from "@/lib/utils";
+import { leerEscalones, textoPromos } from "@/lib/precios";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,9 @@ export default async function ConsultasPage({
   const preguntas: { pregunta: string; respuesta: React.ReactNode }[] = [
     {
       pregunta: "¿Cuánto sale el frasco?",
-      respuesta: `El frasco de ${product.nombre} sale ${formatPrecio(product.precio)}.`,
+      respuesta: leerEscalones(product.escalones).length
+        ? `El frasco de ${product.nombre} sale ${formatPrecio(product.precio)}. Llevando más sale menos: ${textoPromos(leerEscalones(product.escalones))}.`
+        : `El frasco de ${product.nombre} sale ${formatPrecio(product.precio)}.`,
     },
     {
       pregunta: "¿Hacen envíos? ¿A qué zonas?",

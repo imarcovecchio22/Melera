@@ -172,6 +172,16 @@ describe("/api/checkout", () => {
     expect(db.order.update).toHaveBeenCalledWith({ where: { id: "ord-9" }, data: { mpPreferenceId: "pref-1" } });
   });
 
+  it("aplica la promo por cantidad: 5 frascos a $6.000 c/u, 10 a $5.500 c/u", async () => {
+    producto.actual = { ...producto.actual, stock: 20, escalones: [{ desde: 5, precio: 6000 }, { desde: 10, precio: 5500 }] } as typeof producto.actual;
+    for (const [cantidad, unit, total] of [[5, 6000, 30000], [7, 6000, 42000], [10, 5500, 55000], [2, 6500, 13000]]) {
+      mp.create.mockClear(); db.order.create.mockClear();
+      await checkout(post("/api/checkout", { ...pedido, cantidad }));
+      expect(db.order.create.mock.calls[0][0].data.total).toBe(total);
+      expect(mp.create.mock.calls[0][0].body.items[0]).toMatchObject({ unit_price: unit, quantity: cantidad });
+    }
+  });
+
   it("el precio sale siempre de la base, no de lo que mande el navegador", async () => {
     await checkout(post("/api/checkout", { ...pedido, precio: 1, total: 1 }));
     expect(db.order.create.mock.calls[0][0].data.total).toBe(13000);

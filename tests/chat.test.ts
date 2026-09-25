@@ -13,7 +13,7 @@ vi.mock("@google/genai", () => ({
   },
 }));
 
-vi.mock("@/lib/product", () => ({ getMainProduct: async () => ({ precio: 7200 }) }));
+vi.mock("@/lib/product", () => ({ getMainProduct: async () => ({ precio: 7200, escalones: [{ desde: 5, precio: 6500 }] }) }));
 
 import { POST } from "@/app/api/chat/route";
 
@@ -44,6 +44,7 @@ describe("/api/chat", () => {
     expect(instrucciones).toMatch(/\$\s?7\.200/);
     expect(instrucciones).not.toContain("6.500");
     expect(instrucciones).toContain("solo dentro de CABA");
+    expect(instrucciones).toMatch(/Promos por cantidad.*5 frascos a \$\s?32\.500/);
     expect(instrucciones).not.toMatch(/Rappi|Correo Argentino|transferencia/);
   });
 

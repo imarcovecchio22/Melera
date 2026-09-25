@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { formatPrecio } from "@/lib/utils";
+import { totalPedido, type Escalon } from "@/lib/precios";
 
 type Props = {
-  producto: { nombre: string; precio: number };
+  producto: { nombre: string; precio: number; escalones: Escalon[] };
   cantidadInicial: number;
   origen?: string;
 };
@@ -49,7 +50,9 @@ export default function CheckoutForm({ producto, cantidadInicial, origen }: Prop
     }
   }
 
-  const total = producto.precio * cantidad;
+  // Solo para mostrar: el total que se cobra lo calcula el servidor con los mismos escalones
+  const { unitario, total, ahorro } = totalPedido(producto.precio, producto.escalones, cantidad);
+  const proximo = producto.escalones.find((e) => e.desde > cantidad && e.precio < unitario);
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-3 lg:gap-12">
@@ -142,10 +145,25 @@ export default function CheckoutForm({ producto, cantidadInicial, origen }: Prop
             </button>
           </div>
         </div>
-        <div className="mt-4 flex items-center justify-between border-t border-[rgba(234,162,28,0.22)] pt-4 font-semibold text-[var(--ink)]">
+        <p className="mt-2 text-right text-xs texto-suave">
+          {cantidad} × {formatPrecio(unitario)}
+        </p>
+        <div className="mt-3 flex items-center justify-between border-t border-[rgba(234,162,28,0.22)] pt-4 font-semibold text-[var(--ink)]">
           <span>Total</span>
           <span>{formatPrecio(total)}</span>
         </div>
+        {ahorro > 0 && (
+          <p className="mt-2 text-sm font-semibold text-[var(--glow)]">Ahorrás {formatPrecio(ahorro)} con la promo</p>
+        )}
+        {proximo && (
+          <button
+            type="button"
+            onClick={() => setCantidad(proximo.desde)}
+            className="mt-2 text-left text-xs text-[var(--glow)] underline underline-offset-2"
+          >
+            Llevando {proximo.desde} frascos pagás {formatPrecio(proximo.precio)} cada uno
+          </button>
+        )}
         <p className="mt-2 text-xs texto-suave">
           Envío dentro de CABA: después de la compra te escribimos para coordinarlo.
         </p>

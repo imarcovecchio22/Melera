@@ -21,6 +21,8 @@ model Product {
   nombre      String
   descripcion String
   precio      Int
+  // Promos por cantidad: [{ desde: 5, precio: 6000 }, ...] (precio por frasco desde esa cantidad)
+  escalones   Json     @default("[]")
   stock       Int      @default(0)
   imagenUrl   String?
   createdAt   DateTime @default(now())

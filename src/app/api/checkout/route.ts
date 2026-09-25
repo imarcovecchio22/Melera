@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getPreferenceClient } from "@/lib/mercadopago";
 import { checkoutSchema } from "@/lib/validation";
 import { getMainProduct } from "@/lib/product";
+import { leerEscalones, totalPedido } from "@/lib/precios";
 import { errorMessage, logEvent } from "@/lib/logs";
 
 export async function POST(req: NextRequest) {
@@ -32,7 +33,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const total = product.precio * data.cantidad;
+  // Precio por escalón (promos por cantidad), siempre calculado acá con los datos de la base
+  const { unitario, total } = totalPedido(product.precio, leerEscalones(product.escalones), data.cantidad);
 
   const order = await prisma.order.create({
     data: {
@@ -73,7 +75,7 @@ export async function POST(req: NextRequest) {
             id: product.id,
             title: product.nombre,
             quantity: data.cantidad,
-            unit_price: product.precio,
+            unit_price: unitario,
             currency_id: "ARS",
           },
         ],

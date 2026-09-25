@@ -1,6 +1,7 @@
 import ChatWidget from "@/components/ChatWidget";
 import CheckoutForm from "@/components/CheckoutForm";
 import { getMainProduct } from "@/lib/product";
+import { leerEscalones } from "@/lib/precios";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function CheckoutPage({
           Finalizar compra
         </h1>
         <CheckoutForm
-          producto={{ nombre: product.nombre, precio: product.precio }}
+          producto={{ nombre: product.nombre, precio: product.precio, escalones: leerEscalones(product.escalones) }}
           cantidadInicial={cantidadInicial}
           origen={origen}
         />

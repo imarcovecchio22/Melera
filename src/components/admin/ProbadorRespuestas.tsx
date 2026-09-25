@@ -20,7 +20,7 @@ type ReglaProbador = ReglaParaCoincidir & {
  * Muestra qué regla coincidiría con un mensaje de ejemplo y qué se respondería,
  * sin mandar nada. Usa la misma lógica que el webhook.
  */
-export default function ProbadorRespuestas({ reglas, precio }: { reglas: ReglaProbador[]; precio: string }) {
+export default function ProbadorRespuestas({ reglas, precio, promos = "" }: { reglas: ReglaProbador[]; precio: string; promos?: string }) {
   const [texto, setTexto] = useState("");
   const [canal, setCanal] = useState<CanalEvento>("dm");
 
@@ -51,7 +51,7 @@ export default function ProbadorRespuestas({ reglas, precio }: { reglas: ReglaPr
             <p className="font-semibold text-emerald-800">
               Coincide: #{regla.id} {regla.nombre} (prioridad {regla.prioridad})
             </p>
-            <p className="mt-2 whitespace-pre-wrap">{armarTextoRespuesta(regla.respuesta, precio)}</p>
+            <p className="mt-2 whitespace-pre-wrap">{armarTextoRespuesta(regla.respuesta, precio, promos)}</p>
             {regla.botones.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {regla.botones.map((b) => (
