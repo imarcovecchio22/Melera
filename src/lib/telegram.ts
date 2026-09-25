@@ -21,17 +21,19 @@ export function telegramConfigurado() {
  */
 export async function telegramApi<T = unknown>(
   method: string,
-  payload: Record<string, unknown>,
+  payload: Record<string, unknown> | FormData,
   timeoutMs = 10000
 ): Promise<T> {
   const token = parseBotToken(process.env.TELEGRAM_BOT_TOKEN);
   if (!token) throw new Error("Falta configurar TELEGRAM_BOT_TOKEN");
 
+  // Con FormData (archivos) el navegador/Node arma el multipart y su Content-Type
+  const esArchivo = payload instanceof FormData;
   const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: esArchivo ? undefined : { "Content-Type": "application/json" },
     signal: AbortSignal.timeout(timeoutMs),
-    body: JSON.stringify(payload),
+    body: esArchivo ? payload : JSON.stringify(payload),
   });
 
   const data = (await res.json().catch(() => null)) as { ok?: boolean; result?: T; description?: string } | null;
@@ -60,24 +62,38 @@ export async function sendTelegramMessage(text: string) {
 
 export type BotonTelegram = { text: string; callback_data: string };
 
-/** Manda una foto (por URL) al chat de Melera, con botones opcionales. */
+/**
+ * Manda una foto al chat de Melera, con botones opcionales. `photo` puede ser una URL
+ * (Telegram la descarga) o los bytes de la imagen (se suben como archivo: así Telegram no
+ * depende de poder entrar al sitio, por ejemplo si Vercel le muestra un desafío anti-bots).
+ */
 export async function sendTelegramPhoto(opciones: {
-  photo: string;
+  photo: string | Uint8Array;
   caption: string;
   botones?: BotonTelegram[][];
   silencioso?: boolean;
+  nombreArchivo?: string;
 }) {
-  const result = await telegramApi<{ message_id: number }>(
-    "sendPhoto",
-    {
-      chat_id: telegramChatId(),
-      photo: opciones.photo,
-      caption: opciones.caption.slice(0, 1024), // límite de Telegram para captions
-      disable_notification: opciones.silencioso ?? false,
-      ...(opciones.botones ? { reply_markup: { inline_keyboard: opciones.botones } } : {}),
-    },
-    30000 // Telegram descarga la imagen; puede tardar si se está generando
-  );
+  const campos = {
+    chat_id: telegramChatId(),
+    caption: opciones.caption.slice(0, 1024), // límite de Telegram para captions
+    disable_notification: opciones.silencioso ?? false,
+    ...(opciones.botones ? { reply_markup: { inline_keyboard: opciones.botones } } : {}),
+  };
+
+  let payload: Record<string, unknown> | FormData;
+  if (typeof opciones.photo === "string") {
+    payload = { ...campos, photo: opciones.photo };
+  } else {
+    payload = new FormData();
+    for (const [k, v] of Object.entries(campos)) {
+      if (v !== undefined) payload.append(k, typeof v === "object" ? JSON.stringify(v) : String(v));
+    }
+    const bytes = new Uint8Array(opciones.photo); // copia sobre un ArrayBuffer propio (lo pide Blob)
+    payload.append("photo", new Blob([bytes], { type: "image/jpeg" }), opciones.nombreArchivo ?? "melera.jpg");
+  }
+
+  const result = await telegramApi<{ message_id: number }>("sendPhoto", payload, 30000);
   return result.message_id;
 }
 

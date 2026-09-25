@@ -36,14 +36,16 @@ export function datosPlantilla(post: PostIG, copy: CopyIG) {
   };
 }
 
-// Pide la imagen para que se dibuje ahora (y quede en caché) y no recién cuando la pida Telegram o Meta.
+// Pide la imagen para que se dibuje ahora (y quede en caché para Meta) y devuelve sus bytes:
+// a Telegram se le suben directo, así no tiene que descargarla del sitio.
 async function prepararImagen(url: string) {
   const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(45000) });
   const tipo = res.headers.get("content-type") ?? "";
-  await res.arrayBuffer().catch(() => null);
-  if (!res.ok || !tipo.startsWith("image/")) {
+  const bytes = await res.arrayBuffer().catch(() => null);
+  if (!res.ok || !tipo.startsWith("image/") || !bytes) {
     throw new Error(`No se pudo dibujar la imagen (${res.status})`);
   }
+  return new Uint8Array(bytes);
 }
 
 async function generarUno(post: PostIG) {
@@ -64,7 +66,10 @@ async function generarUno(post: PostIG) {
       datosPlantilla(post, copy),
       siteUrl()
     );
-    await Promise.all([prepararImagen(urls.image_url), prepararImagen(urls.story_image_url)]);
+    const [feedJpg, storyJpg] = await Promise.all([
+      prepararImagen(urls.image_url),
+      prepararImagen(urls.story_image_url),
+    ]);
 
     await prisma.postIG.update({
       where: { id: post.id },
@@ -80,12 +85,14 @@ async function generarUno(post: PostIG) {
 
     const fecha = post.fecha.toISOString().slice(0, 10);
     await sendTelegramPhoto({
-      photo: urls.story_image_url,
+      photo: storyJpg,
+      nombreArchivo: `post-${post.id}-historia.jpg`,
       caption: `📱 Versión historia · post #${post.id}`,
       silencioso: true,
     });
     const messageId = await sendTelegramPhoto({
-      photo: urls.image_url,
+      photo: feedJpg,
+      nombreArchivo: `post-${post.id}-feed.jpg`,
       caption: `${post.tipo} (${post.estilo}) · ${fecha} · post #${post.id}\n\n${copy.caption_ig}\n\n¿Dónde lo publicamos?`,
       botones: botonesPost(post.id),
     });
