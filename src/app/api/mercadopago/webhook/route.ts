@@ -26,7 +26,9 @@ export async function POST(req: NextRequest) {
       nivel: "error",
       detalle: { error: errorMessage(error) },
     });
-    return NextResponse.json({ received: true });
+    // 500 para que Mercado Pago reintente: con un 200 el pago quedaría sin registrar para siempre
+    // (aplicar el pago es idempotente, así que un reintento no duplica nada).
+    return NextResponse.json({ received: false }, { status: 500 });
   }
 }
 

@@ -120,6 +120,9 @@ Ver `.env.example` para el detalle completo.
 - Las URLs que carga el servidor (fotos de producto) tienen que ser https públicas. Al dibujar imágenes, Chromium solo puede cargar fuentes de Google e imágenes https públicas.
 - Dependencias al día (Next 16, React 19, `mercadopago` 3, vitest 5): `npm audit` sin vulnerabilidades al 2026-09-24.
 
+- Pagos: el paso a "pagado" es atómico (`updateMany` condicionado dentro de la transacción), así que avisos repetidos o simultáneos de Mercado Pago descuentan el stock y avisan una sola vez, y un rechazo tardío no pisa un pago aprobado. Si falla la consulta a Mercado Pago, el webhook responde 500 para que reintente.
+- Pruebas (`npm test`, carpeta `tests/`): además de la lógica de Instagram, las rutas de login (bloqueo), consultas (honeypot y límite), checkout (validación, solo CABA, precio de la base), pagos (idempotencia y concurrencia), el proxy del admin (sesión y CSRF), los crons y el webhook de Mercado Pago.
+
 ### Notas de Next.js 16
 
 - El middleware se llama **proxy** (`src/proxy.ts`, función `proxy`) y corre en Node.

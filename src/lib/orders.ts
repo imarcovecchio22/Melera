@@ -68,36 +68,37 @@ async function applyPayment(
     return order;
   }
 
-  const pasaAPagado = nuevoEstado === "pagado" && order.estado !== "pagado";
-
-  const { updated, product } = await prisma.$transaction(async (tx) => {
-    const updated = await tx.order.update({
-      where: { id: orderId },
-      data: {
-        estado: nuevoEstado,
-        mpPaymentId: String(payment.id),
-      },
+  // Cambio de estado atómico: la condición "todavía no está pagado" se evalúa en la misma
+  // actualización. Mercado Pago avisa más de una vez (y la página de éxito también aplica el
+  // pago): si dos avisos llegan juntos, solo uno pasa el pedido a pagado, descuenta el stock
+  // y avisa por Telegram. Tampoco deja que un "rechazado" tardío pise un pago aprobado.
+  const { updated, product, pasoAPagado } = await prisma.$transaction(async (tx) => {
+    const { count } = await tx.order.updateMany({
+      where: { id: orderId, estado: { not: "pagado" } },
+      data: { estado: nuevoEstado, mpPaymentId: String(payment.id) },
     });
+    const pasoAPagado = count === 1 && nuevoEstado === "pagado";
 
     let product: Product | null = null;
-    if (pasaAPagado) {
+    if (pasoAPagado) {
       product = await tx.product.update({
         where: { id: order.productId },
         data: { stock: { decrement: order.cantidad } },
       });
     }
 
-    return { updated, product };
+    const updated = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
+    return { updated, product, pasoAPagado };
   });
 
-  if (order.estado !== nuevoEstado) {
+  if (order.estado !== nuevoEstado && updated.estado === nuevoEstado) {
     await logEvent("pago", `Pedido #${order.numero}: ${order.estado} → ${nuevoEstado}`, {
       nivel: nuevoEstado === "cancelado" ? "warn" : "info",
       detalle: { pagoMP: payment.id, estadoMP: payment.status, total: order.total },
     });
   }
 
-  if (pasaAPagado && product) {
+  if (pasoAPagado && product) {
     // Se espera (con timeout) para que Vercel no corte el envío al terminar la respuesta.
     try {
       const enviado = await notifyOrderPaid(updated, product);
