@@ -16,7 +16,7 @@ function resolveTemplatesDir() {
 const TEMPLATES_DIR = resolveTemplatesDir();
 const OUTPUT_DIR = path.join(__dirname, 'output');
 
-const ESTILOS = ['organico', 'geo'];
+const ESTILOS = ['organico', 'geo', 'panal'];
 const TIPOS = ['presentacion', 'producto', 'dato'];
 
 const REQUIRED_FIELDS = {
@@ -134,7 +134,16 @@ function loadTemplate(estilo, tipo) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`No se encontró el template "${fileName}" en ${TEMPLATES_DIR}.`);
   }
-  return fs.readFileSync(filePath, 'utf8');
+  const html = fs.readFileSync(filePath, 'utf8');
+  // Las plantillas del estilo panal comparten el dibujo del panal y la abeja (panal-fondo.js).
+  // Con función: el código tiene "$" que un reemplazo por texto interpretaría.
+  return html.replace('<!--PANAL_JS-->', () => `<script>${getPanalJs()}</script>`);
+}
+
+let panalJs;
+function getPanalJs() {
+  if (panalJs === undefined) panalJs = fs.readFileSync(path.join(TEMPLATES_DIR, 'panal-fondo.js'), 'utf8');
+  return panalJs;
 }
 
 function escapeHtml(value) {
@@ -195,6 +204,8 @@ const TOKEN_FIELDS = [
   'tagline', 'titulo', 'texto', 'cta',
   'numero', 'texto_dato',
   'imagen_url', 'nombre_producto', 'caracteristicas', 'precio',
+  // estilo panal: el id del post, para que el panal salga siempre igual para ese post
+  'semilla',
 ];
 
 function getSigningSecret() {
@@ -293,6 +304,8 @@ async function generateImage(data) {
 
 module.exports = {
   FORMATOS,
+  ESTILOS,
+  buildHtml,
   buildImageUrls,
   createImageToken,
   readImageToken,

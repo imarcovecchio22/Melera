@@ -48,6 +48,7 @@ const nextConfig = {
     "/api/img/**": [
       "./melera-templates/*.html",
       "./melera-templates/logo.png",
+      "./melera-templates/panal-fondo.js",
       "./node_modules/@sparticuz/chromium/bin/**",
     ],
   },

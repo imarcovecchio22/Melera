@@ -80,6 +80,8 @@ async function renderHtmlToJpeg(html, { width, height }) {
     // fuentes cargadas + script que achica textos largos
     await page.evaluate(async () => {
       await document.fonts.ready;
+      // las plantillas que dibujan después de medir (estilo panal) avisan cuándo terminaron
+      if (window.__plantillaLista) await window.__plantillaLista;
       await new Promise((r) => setTimeout(r, 300));
     });
     return Buffer.from(await page.screenshot({ type: 'jpeg', quality: 92 }));
