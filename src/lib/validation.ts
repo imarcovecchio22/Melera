@@ -90,7 +90,7 @@ export const postIGSchema = z
       .string()
       .regex(FECHA, "La fecha tiene que tener el formato AAAA-MM-DD")
       .refine((v) => !Number.isNaN(Date.parse(`${v}T00:00:00Z`)), "Fecha inválida"),
-    tipo: z.enum(["presentacion", "producto", "dato"], {
+    tipo: z.enum(["presentacion", "producto", "dato", "promo"], {
       errorMap: () => ({ message: "Elegí el tipo de post" }),
     }),
     estilo: z.enum(["organico", "geo", "panal"], { errorMap: () => ({ message: "Elegí el estilo" }) }),

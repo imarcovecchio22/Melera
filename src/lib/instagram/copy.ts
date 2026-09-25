@@ -33,10 +33,10 @@ const CAMPOS: (keyof CopyIG)[] = [
 ];
 
 const DESCRIPCIONES: Record<keyof CopyIG, string> = {
-  tagline: "Frase corta de 2-4 palabras sobre el título (presentacion) o cierre corto (dato)",
-  titulo: "Título grande de 2-5 palabras, puede tener una palabra entre <em></em> (presentacion)",
+  tagline: "Frase corta de 2-4 palabras sobre el título (presentacion y promo) o cierre corto (dato)",
+  titulo: "Título grande de 2-5 palabras, puede tener una palabra entre <em></em> (presentacion y promo)",
   subtitulo: "Texto de 1-2 oraciones, máx 110 caracteres (presentacion)",
-  cta: "Llamado a la acción de 2-4 palabras (presentacion y producto)",
+  cta: "Llamado a la acción de 2-4 palabras (presentacion, producto y promo)",
   caracteristica_1: "Primera etiqueta, 1-2 palabras, nunca el precio (producto)",
   caracteristica_2: "Segunda etiqueta, 1-2 palabras, nunca el precio (producto)",
   caracteristica_3: "Tercera etiqueta, 1-2 palabras, nunca el precio (producto)",
@@ -47,10 +47,14 @@ const DESCRIPCIONES: Record<keyof CopyIG, string> = {
 };
 
 /** El pedido a Gemini. Los datos del post van como datos, delimitados, no como instrucciones. */
-export function armarPrompt(post: Pick<PostIG, "tipo" | "tema" | "nombreProducto" | "categoria" | "precio" | "presentacion">) {
+export function armarPrompt(
+  post: Pick<PostIG, "tipo" | "tema" | "nombreProducto" | "categoria" | "precio" | "presentacion">,
+  promos?: string
+) {
   const datos = {
     tipo: post.tipo,
     tema: post.tema,
+    ...(post.tipo === "promo" && promos ? { promos } : {}),
     ...(post.tipo === "producto"
       ? {
           nombre_producto: post.nombreProducto,
@@ -69,10 +73,12 @@ ${JSON.stringify(datos, null, 2)}
 </datos>
 
 Si el tipo es "producto", nombre_producto, categoria, precio y presentacion son datos REALES que no debés modificar ni inventar.
+Si el tipo es "promo", promos son los precios REALES (miel de 500 g): no inventes otros números ni otras promos.
 
 Los textos van sobre una imagen, así que tienen que ser CORTOS. Completá SOLO los campos que correspondan al tipo de post:
 - presentacion -> tagline (2 a 4 palabras, va chiquito en mayúsculas arriba del título), titulo (2 a 5 palabras; podés envolver UNA palabra clave en <em></em> para destacarla en cursiva, ej: Pura, <em>natural</em>), subtitulo (1 o 2 oraciones, máximo 110 caracteres), cta (llamado a la acción de 2 a 4 palabras, ej: Escribinos por DM)
 - producto -> caracteristica_1, caracteristica_2, caracteristica_3 (1 o 2 palabras cada una, van como etiquetas debajo del nombre: cualidades del producto como Artesanal / Sin aditivos / Cosecha 2026, o la presentación tipo Frasco 500 g; NUNCA pongas el precio, que ya aparece grande en la imagen, ni el nombre del producto), cta
+- promo -> tagline (2 a 4 palabras, ej: llevá más, pagá menos), titulo (2 a 5 palabras sobre la promo; podés envolver UNA palabra en <em></em>; NO pongas precios, que ya aparecen en la imagen), cta (2 a 4 palabras, ej: Pedila en la web). En caption_ig nombrá las promos con sus precios exactos.
 - dato -> numero (la cifra con su sufijo incluido si lo tiene, máximo 7 caracteres, ej: 50.000+ o 3 kg), texto_dato (una oración que explica el número incluyendo la unidad, máximo 90 caracteres, SIN repetir la cifra), tagline (cierre corto de 2 a 4 palabras, ej: la magia de la colmena), hashtags. El dato debe ser real y verificable sobre abejas/apicultura/miel, nunca inventado.
 
 Siempre completá también caption_ig: texto para la descripción del post de Instagram (2 a 4 líneas + 3 a 5 hashtags al final).
@@ -92,7 +98,8 @@ export function limpiarCopy(crudo: unknown): CopyIG {
 }
 
 export async function generarCopy(
-  post: Pick<PostIG, "tipo" | "tema" | "nombreProducto" | "categoria" | "precio" | "presentacion">
+  post: Pick<PostIG, "tipo" | "tema" | "nombreProducto" | "categoria" | "precio" | "presentacion">,
+  promos?: string
 ) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("Falta GEMINI_API_KEY");
@@ -100,7 +107,7 @@ export async function generarCopy(
   const ai = new GoogleGenAI({ apiKey });
   const respuesta = await ai.models.generateContent({
     model: MODEL,
-    contents: [{ role: "user", parts: [{ text: armarPrompt(post) }] }],
+    contents: [{ role: "user", parts: [{ text: armarPrompt(post, promos) }] }],
     config: {
       responseMimeType: "application/json",
       responseSchema: {

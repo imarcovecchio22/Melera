@@ -17,12 +17,14 @@ const TEMPLATES_DIR = resolveTemplatesDir();
 const OUTPUT_DIR = path.join(__dirname, 'output');
 
 const ESTILOS = ['organico', 'geo', 'panal'];
-const TIPOS = ['presentacion', 'producto', 'dato'];
+const TIPOS = ['presentacion', 'producto', 'dato', 'promo'];
 
 const REQUIRED_FIELDS = {
   presentacion: ['fecha', 'tagline', 'titulo', 'texto'],
   producto: ['fecha', 'imagen_url', 'nombre_producto', 'precio'],
   dato: ['fecha', 'numero', 'texto_dato'],
+  // promos: "1 frasco|$ 6.500|;5 frascos|$ 30.000|$ 6.000 c/u · ahorrás $ 2.500" (lo arma la web con los precios de la base)
+  promo: ['fecha', 'titulo', 'promos'],
 };
 
 // Tamaños de render: la misma plantilla se adapta sola a cada formato.
@@ -204,6 +206,7 @@ const TOKEN_FIELDS = [
   'tagline', 'titulo', 'texto', 'cta',
   'numero', 'texto_dato',
   'imagen_url', 'nombre_producto', 'caracteristicas', 'precio',
+  'promos',
   // estilo panal: el id del post, para que el panal salga siempre igual para ese post
   'semilla',
 ];

@@ -2,6 +2,9 @@ import type { PostIG } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { errorMessage, logEvent } from "@/lib/logs";
 import { esUrlPublicaHttps } from "@/lib/security";
+import { getMainProduct } from "@/lib/product";
+import { leerEscalones, promosParaPlantilla, textoPromos } from "@/lib/precios";
+import { formatPrecio } from "@/lib/utils";
 import { sendTelegramMessage, sendTelegramPhoto, siteUrl } from "@/lib/telegram";
 import { generarCopy, type CopyIG } from "@/lib/instagram/copy";
 import { botonesPost, hoyArgentina } from "@/lib/instagram/botones";
@@ -14,7 +17,7 @@ const { buildImageUrls } = require("../../../melera-templates/generate");
 export const MAX_POR_CORRIDA = 3;
 
 /** Datos que espera la plantilla (mismos nombres que usaba la Sheet). */
-export function datosPlantilla(post: PostIG, copy: CopyIG) {
+export function datosPlantilla(post: PostIG, copy: CopyIG, promo?: { promos: string; imagenUrl: string }) {
   return {
     tipo: post.tipo,
     estilo: post.estilo,
@@ -32,7 +35,9 @@ export function datosPlantilla(post: PostIG, copy: CopyIG) {
     caracteristica_3: copy.caracteristica_3,
     nombre_producto: post.nombreProducto ?? "",
     precio: post.precio ?? "",
-    imagen_url: post.imagenUrl ?? "",
+    imagen_url: post.imagenUrl || promo?.imagenUrl || "",
+    // tipo promo: las promos de "Precio y stock" al momento de generar
+    ...(promo ? { promos: promo.promos } : {}),
   };
 }
 
@@ -61,9 +66,22 @@ async function generarUno(post: PostIG) {
       throw new Error("La foto del producto tiene que ser un link https público");
     }
 
-    const copy = await generarCopy(post);
+    // Promo: los precios salen de la base al generar (así la imagen nunca muestra una promo vieja)
+    let promo: { promos: string; imagenUrl: string; texto: string } | undefined;
+    if (post.tipo === "promo") {
+      const producto = await getMainProduct();
+      const escalones = leerEscalones(producto.escalones);
+      if (!escalones.length) throw new Error("No hay promos cargadas en Precio y stock");
+      promo = {
+        promos: promosParaPlantilla(producto.precio, escalones),
+        imagenUrl: `${siteUrl()}/producto-miel-500g.png`,
+        texto: `1 frasco a ${formatPrecio(producto.precio)} · ${textoPromos(escalones)}`,
+      };
+    }
+
+    const copy = await generarCopy(post, promo?.texto);
     const urls: { image_url: string; story_image_url: string } = buildImageUrls(
-      datosPlantilla(post, copy),
+      datosPlantilla(post, copy, promo),
       siteUrl()
     );
     const [feedJpg, storyJpg] = await Promise.all([

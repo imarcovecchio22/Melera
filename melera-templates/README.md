@@ -1,6 +1,6 @@
 # Melera — Templates IG v4
 
-9 plantillas HTML (3 estilos × 3 tipos) que se renderizan con **Chromium en nuestra propia app de Vercel**
+12 plantillas HTML (3 estilos × 4 tipos) que se renderizan con **Chromium en nuestra propia app de Vercel**
 (`puppeteer-core` + `@sparticuz/chromium`). No hay servicio externo ni cuota mensual de imágenes.
 Cada plantilla sirve para **feed y story**: el diseño se adapta solo según el tamaño de render.
 
@@ -53,6 +53,17 @@ El encabezado "¿Sabías que?" es fijo en la plantilla.
 | `{{precio}}` | `6500` o `$6.500` (se muestra `$6.500`) |
 
 Obligatorios por tipo: presentación `tagline`, `titulo`, `texto` · dato `numero`, `texto_dato` · producto `imagen_url`, `nombre_producto`, `precio`.
+
+### Promo
+| Variable | Ejemplo |
+|---|---|
+| `{{tagline}}` | `llevá más, pagá menos` |
+| `{{titulo}}` | `Más miel, <em>mejor precio</em>` |
+| `{{promos}}` | `1 frasco\|$ 6.500\|;5 frascos\|$ 30.000\|$ 6.000 c/u · ahorrás $ 2.500;…` (filas separadas por `;`, columnas por `\|`) |
+| `{{cta}}` | `Pedila en la web` |
+| `{{imagen_url}}` | la foto del frasco (la pone la web) |
+
+`{{promos}}` **no se escribe a mano**: `src/lib/instagram/generar.ts` lo arma con `promosParaPlantilla` (`src/lib/precios.ts`) a partir de las promos de "Precio y stock" al momento de generar, así la imagen nunca muestra un precio viejo. Gemini escribe solo `tagline`, `titulo`, `cta` y el caption (recibe las promos reales y no puede inventar otras). En orgánico y geo, si la foto queda de menos de 200 px (feed o textos largos), se oculta. Obligatorios: `titulo`, `promos`.
 
 ### Estilo panal
 

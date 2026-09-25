@@ -118,6 +118,7 @@ enum TipoPostIG {
   presentacion
   producto
   dato
+  promo // las promos por cantidad de "Precio y stock"
 }
 
 enum EstiloPostIG {

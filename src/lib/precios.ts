@@ -58,3 +58,16 @@ export function errorEscalones(precioBase: number, escalones: Escalon[]) {
   }
   return null;
 }
+
+/**
+ * Promos para la plantilla de Instagram tipo "promo", con los precios de la base al momento
+ * de generar: "1 frasco|$ 6.500|;5 frascos|$ 30.000|$ 6.000 c/u · ahorrás $ 2.500;..."
+ */
+export function promosParaPlantilla(precioBase: number, escalones: Escalon[]) {
+  const filas = [`1 frasco|${formatPrecio(precioBase)}|`];
+  for (const e of escalones) {
+    const t = totalPedido(precioBase, escalones, e.desde);
+    filas.push(`${e.desde} frascos|${formatPrecio(t.total)}|${formatPrecio(t.unitario)} c/u · ahorrás ${formatPrecio(t.ahorro)}`);
+  }
+  return filas.join(";");
+}

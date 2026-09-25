@@ -21,7 +21,7 @@ const ESTADO: Record<EstadoPostIG, { label: string; color: string }> = {
   error: { label: "Error", color: "bg-red-100 text-red-800" },
 };
 
-const TIPO: Record<string, string> = { presentacion: "Presentación", producto: "Producto", dato: "Dato curioso" };
+const TIPO: Record<string, string> = { presentacion: "Presentación", producto: "Producto", dato: "Dato curioso", promo: "Promo" };
 
 const SECCIONES: { titulo: string; estados: EstadoPostIG[]; limite?: number }[] = [
   { titulo: "Esperando tu aprobación en Telegram", estados: ["esperando_aprobacion", "generando", "publicando"] },

@@ -5,7 +5,7 @@ import { useState } from "react";
 
 export type PostIGValores = {
   fecha: string;
-  tipo: "presentacion" | "producto" | "dato";
+  tipo: "presentacion" | "producto" | "dato" | "promo";
   estilo: "organico" | "geo" | "panal";
   tema: string;
   nombreProducto: string;
@@ -92,6 +92,7 @@ export default function PostIGForm({
             <option value="presentacion">Presentación</option>
             <option value="dato">Dato curioso</option>
             <option value="producto">Producto</option>
+            <option value="promo">Promo (las de Precio y stock)</option>
           </select>
         </div>
         <div>
