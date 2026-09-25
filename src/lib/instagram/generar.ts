@@ -19,6 +19,8 @@ export function datosPlantilla(post: PostIG, copy: CopyIG) {
     tipo: post.tipo,
     estilo: post.estilo,
     fecha: post.fecha.toISOString().slice(0, 10),
+    // estilo panal: el panal del fondo se genera a partir del id del post (mismo post, misma imagen)
+    ...(post.estilo === "panal" ? { semilla: String(post.id) } : {}),
     tagline: copy.tagline,
     titulo: copy.titulo,
     subtitulo: copy.subtitulo,

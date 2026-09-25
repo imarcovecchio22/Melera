@@ -1,6 +1,6 @@
-# Melera — Templates IG v3
+# Melera — Templates IG v4
 
-6 plantillas HTML (2 estilos × 3 tipos) que se renderizan con **Chromium en nuestra propia app de Vercel**
+9 plantillas HTML (3 estilos × 3 tipos) que se renderizan con **Chromium en nuestra propia app de Vercel**
 (`puppeteer-core` + `@sparticuz/chromium`). No hay servicio externo ni cuota mensual de imágenes.
 Cada plantilla sirve para **feed y story**: el diseño se adapta solo según el tamaño de render.
 
@@ -15,6 +15,8 @@ Cada plantilla sirve para **feed y story**: el diseño se adapta solo según el 
 |---|---|
 | `organico-{presentacion,dato,producto}.html` | Estilo orgánico: fondo oscuro, gotas de miel, logo en círculo crema |
 | `geo-{presentacion,dato,producto}.html` | Estilo geométrico: fondo crema, hexágonos, logo directo |
+| `panal-{presentacion,dato,producto}.html` | Estilo panal (el de la web): panal con luz cálida, abeja con jarrón, logo sobre una celda crema |
+| `panal-fondo.js` | Dibujo compartido del estilo panal (panal con semilla + abeja). `generate.js` lo inserta en cada `panal-*.html` donde dice `<!--PANAL_JS-->` |
 | `logo.png` | Logo Melera (abeja + hexágono + wordmark). `generate.js` lo inyecta como data URI en `{{logo_src}}` |
 | `generate.js` | Normaliza y valida los datos, rellena la plantilla, arma y verifica las URLs firmadas |
 | `render.js` | Abre Chromium y saca la captura JPEG (en Vercel usa `@sparticuz/chromium`; en local, Chrome/Edge instalado o `CHROME_PATH`) |
@@ -51,6 +53,17 @@ El encabezado "¿Sabías que?" es fijo en la plantilla.
 | `{{precio}}` | `6500` o `$6.500` (se muestra `$6.500`) |
 
 Obligatorios por tipo: presentación `tagline`, `titulo`, `texto` · dato `numero`, `texto_dato` · producto `imagen_url`, `nombre_producto`, `precio`.
+
+### Estilo panal
+
+- **Semilla:** el panal del fondo sale de `{{semilla}}` (el id del post; lo manda `src/lib/instagram/generar.ts`). Mismo post → misma imagen; posts distintos → celdas distintas. Sin semilla (por ejemplo desde `/api/generate`) usa un valor fijo.
+- **Abeja:** se ubica después de medir los textos y la foto, en el primer lugar candidato (`data-lugares`) donde no toca nada. Si no hubiera lugar libre, sale sin abeja.
+- **Contraste:** velos radiales oscuros detrás de cada texto. Medido en 20 semillas: mínimo 6:1.
+- **Dato:** `{{numero}}` grande en Fraunces color miel, `{{texto_dato}}` debajo y `{{tagline}}` arriba con el hexágono.
+- **Presentación:** `{{tagline}}`, `{{titulo}}`, `{{texto}}` y `{{cta}}` como botón hexagonal (sin sticker de encuesta: la API de Meta no lo permite).
+- **Producto:** la foto con resplandor, `{{nombre_producto}}`, `{{caracteristicas}}` en una línea (separadas por ·), `{{precio}}` y "melera.vercel.app".
+- La plantilla avisa con `window.__plantillaLista` cuándo terminó de medir y dibujar; `render.js` la espera.
+- Referencias de diseño aprobadas: `docs/templates-panal/*.dc.html`.
 
 ### Reglas
 - `{{titulo}}` y `{{nombre_producto}}` aceptan `<em>…</em>` / `<i>…</i>` (cursiva color miel) y `<br>`. El resto del HTML se escapa.

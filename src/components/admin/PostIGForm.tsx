@@ -6,7 +6,7 @@ import { useState } from "react";
 export type PostIGValores = {
   fecha: string;
   tipo: "presentacion" | "producto" | "dato";
-  estilo: "organico" | "geo";
+  estilo: "organico" | "geo" | "panal";
   tema: string;
   nombreProducto: string;
   categoria: string;
@@ -99,6 +99,7 @@ export default function PostIGForm({
           <select id={`${idBase}-estilo`} className="input-field" value={valores.estilo} onChange={(e) => set("estilo", e.target.value as PostIGValores["estilo"])}>
             <option value="organico">Orgánico (fondo oscuro)</option>
             <option value="geo">Geo (fondo crema)</option>
+            <option value="panal">Panal (como la web)</option>
           </select>
         </div>
       </div>

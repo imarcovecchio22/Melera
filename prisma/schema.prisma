@@ -121,6 +121,7 @@ enum TipoPostIG {
 enum EstiloPostIG {
   organico
   geo
+  panal // el lenguaje visual de la web: panal, luz y abeja con jarrón
 }
 
 enum EstadoPostIG {

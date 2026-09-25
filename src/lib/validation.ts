@@ -93,7 +93,7 @@ export const postIGSchema = z
     tipo: z.enum(["presentacion", "producto", "dato"], {
       errorMap: () => ({ message: "Elegí el tipo de post" }),
     }),
-    estilo: z.enum(["organico", "geo"], { errorMap: () => ({ message: "Elegí el estilo" }) }),
+    estilo: z.enum(["organico", "geo", "panal"], { errorMap: () => ({ message: "Elegí el estilo" }) }),
     tema: z
       .string()
       .trim()
