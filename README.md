@@ -91,8 +91,10 @@ Ver `.env.example` para el detalle completo.
 - **Cargar posts:** `/admin/instagram` (fecha, tipo, estilo, tema; en productos también nombre, precio y foto). Cada post pasa por `pendiente → generando → esperando_aprobacion → publicando → publicado` (o `descartado` / `error`). Cada cambio de estado es atómico, así que no hay doble publicación.
 - **Generación:** `/api/cron/instagram` (Vercel Cron, `vercel.json`) toma hasta 3 pendientes por corrida. También avisa por Telegram si el token de Meta vence en 7 días o menos. Desde el admin se puede generar al momento.
 - **Aprobación:** Telegram llama a `/api/telegram/webhook` (clave secreta, solo el chat de Melera). Para que los botones lleguen a esta web hay que tocar una vez **"Conectar el bot a esta web"** en `/admin/instagram`.
+- **Estilos:** `organico` (fondo oscuro), `geo` (fondo crema) y `panal` (como la web: panal con luz cálida y abeja con jarrón; el panal sale del id del post). Plantillas y reglas en [`melera-templates/README.md`](melera-templates/README.md).
+- **Imágenes a Telegram:** la web descarga las dos imágenes al generarlas y se las **sube** a Telegram como archivo (no le pasa la URL), así Telegram no depende de poder entrar al sitio. Meta, al publicar, sí usa la URL.
 - **Código:** `src/lib/instagram/`. Los errores quedan en `/admin/logs?tipo=instagram` y llegan por Telegram.
-- **Previews:** el cron solo corre en producción. Para probar los botones en una preview, activar *Protection Bypass for Automation* en Vercel y usar `IG_DRY_RUN=true`.
+- **Previews:** el cron solo corre en producción. Para probar los botones en una preview, activar *Protection Bypass for Automation* en Vercel y usar `IG_DRY_RUN=true`. Ojo: las imágenes se dibujan en el dominio de producción (`siteUrl()`), así que un **estilo nuevo** recién se puede probar después de desplegarlo.
 
 ## Diseño del panal (páginas públicas)
 
@@ -134,8 +136,12 @@ Ver `.env.example` para el detalle completo.
 
 Desde 2026-09-24 el esquema se maneja con migraciones (`prisma/migrations`). `0_init` es la foto del esquema que existía antes (creado con `db push`) y en Neon se marcó como aplicada con `prisma migrate resolve --applied 0_init`. Los cambios nuevos van como migraciones: crear con `migrate dev` y aplicar en producción con `migrate deploy` **antes** de hacer push del código que las usa.
 
+**Las previews usan la misma base que producción.** Si se agrega un valor a un enum (por ejemplo un estilo nuevo) y se crea un registro con ese valor desde una preview, producción falla al leerlo (su Prisma no conoce el valor) hasta que se despliega el código nuevo. Probar esos cambios después del merge, o no crear registros con el valor nuevo desde la preview.
+
 ## Deploy
 
 Pensado para desplegarse en [Vercel](https://vercel.com/) conectando este repo. Configurar las variables de entorno de la tabla anterior en el proyecto de Vercel, usando credenciales reales de Neon y MercadoPago (no las de test).
 
 > Nota: mientras `MP_ACCESS_TOKEN` / `MP_PUBLIC_KEY` sean valores de test, el checkout no procesa pagos reales.
+
+**Firewall de Vercel:** el proyecto no tiene Bot Protection ni Attack Mode, pero Vercel aplica solo una mitigación automática ("System Mitigations") si ve mucho tráfico automatizado desde una IP: le muestra un desafío anti-bots (403 `x-vercel-mitigated: challenge`) a todo lo que no sea un navegador desde ahí, y a veces alcanza a otros clientes automáticos. Pasó el 2026-09-25 después de muchas pruebas automáticas (Lighthouse, capturas) contra producción: hacer esas pruebas en local (`next start`). Meta (webhooks e imágenes) pasa el desafío; por eso a Telegram se le suben las imágenes.
