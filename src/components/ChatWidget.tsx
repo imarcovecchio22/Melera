@@ -64,7 +64,7 @@ export default function ChatWidget() {
         {
           role: "assistant",
           content:
-            "Uy, no pudimos conectar con el asistente. Probá de nuevo en un rato o escribinos por WhatsApp.",
+            "Uy, no pudimos conectar con el asistente. Probá de nuevo en un rato o escribinos desde melera.vercel.app/consultas.",
         },
       ]);
     }

@@ -51,7 +51,6 @@ npm run dev                  # http://localhost:3000
 | `ADMIN_USER` / `ADMIN_PASSWORD` | Credenciales de acceso al panel `/admin` |
 | `NEXTAUTH_SECRET` | Secreto para firmar el JWT de sesión de admin |
 | `NEXTAUTH_URL` | URL base del sitio (usada en la sesión) |
-| `WHATSAPP_NUMBER` | Número de contacto para el botón de WhatsApp (código de país, sin `+`) |
 | `NEXT_PUBLIC_BASE_URL` | URL pública del sitio, usada en los redirects de MercadoPago |
 | `TELEGRAM_BOT_TOKEN` | Token del bot de Telegram que avisa pedidos pagados y consultas nuevas (opcional; sin él no se avisa) |
 | `TELEGRAM_CHAT_ID` | Chat donde llegan esos avisos (`6219737981`, el mismo de la automatización de Instagram) |

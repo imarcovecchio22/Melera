@@ -147,7 +147,7 @@ export default function CheckoutForm({ producto, cantidadInicial, origen }: Prop
           <span>{formatPrecio(total)}</span>
         </div>
         <p className="mt-2 text-xs texto-suave">
-          Envío dentro de CABA: lo coordinamos por WhatsApp luego de la compra.
+          Envío dentro de CABA: después de la compra te escribimos para coordinarlo.
         </p>
 
         {error && (

@@ -26,8 +26,11 @@ export default async function CheckoutFailurePage({
           El pago no se pudo completar
         </h1>
         <p className="mt-3 max-w-md texto-suave">
-          Algo falló durante el pago. Podés intentar de nuevo o contactarnos
-          por WhatsApp si el problema persiste.
+          Algo falló durante el pago. Podés intentar de nuevo o{" "}
+          <Link href="/consultas" className="font-semibold text-[var(--glow)] underline underline-offset-4">
+            escribirnos desde Consultas
+          </Link>{" "}
+          si el problema persiste.
         </p>
         <div className="mt-8 flex gap-3">
           <Link href="/producto" className="btn-panal">

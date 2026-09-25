@@ -36,8 +36,3 @@ export const ESTADOS_COLOR: Record<string, string> = {
   entregado: "bg-green-100 text-green-800",
   cancelado: "bg-red-100 text-red-800",
 };
-
-export function whatsappLink(numero: string, mensaje?: string) {
-  const base = `https://wa.me/${numero}`;
-  return mensaje ? `${base}?text=${encodeURIComponent(mensaje)}` : base;
-}
