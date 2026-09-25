@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import LogoCelda from "@/components/LogoCelda";
 
 export default function Header() {
   return (
@@ -9,7 +9,7 @@ export default function Header() {
         aria-label="Melera, inicio"
         className="flex shrink-0 items-center gap-2.5 rounded-md font-serif text-[1.4rem] font-semibold tracking-[-0.01em] text-[var(--ink)]"
       >
-        <Image src="/brand/melera-icono-dark.svg" alt="" width={36} height={36} unoptimized className="h-9 w-9" />
+        <LogoCelda tamano={44} />
         <span>Melera</span>
       </Link>
       <nav aria-label="Principal" className="flex items-center gap-[clamp(0.8rem,2vw,1.6rem)]">

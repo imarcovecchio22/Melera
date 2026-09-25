@@ -1,4 +1,4 @@
-import Image from "next/image";
+import LogoCelda from "@/components/LogoCelda";
 import Link from "next/link";
 import { whatsappLink } from "@/lib/utils";
 
@@ -9,7 +9,7 @@ export default function Footer() {
     <footer className="relative z-[1] bg-[rgba(18,7,2,0.93)] text-[#A99270]">
       <div className="contenedor-panal flex flex-col items-center gap-5 py-8 text-center sm:flex-row sm:justify-between sm:text-left">
         <div className="flex items-center gap-2.5">
-          <Image src="/brand/melera-icono-dark.svg" alt="" width={36} height={36} unoptimized className="h-9 w-9" />
+          <LogoCelda tamano={40} />
           <div>
             <p className="font-serif text-lg font-semibold text-[var(--ink)]">Melera</p>
             <p className="text-sm">Miel artesanal de Tomás Jofré, Buenos Aires.</p>
