@@ -1,6 +1,6 @@
 /*
  * Fondo de panal y abeja con jarrón para las plantillas del estilo "panal".
- * generate.js lo inserta en cada plantilla panal-*.html (donde dice <!--PANAL_JS-->).
+ * generate.js lo inserta en cada plantilla panal-*.html, en el lugar del marcador PANAL_JS.
  *
  * Todo es determinístico: el panal sale de una semilla (el id del post), así que el
  * mismo post da siempre la misma imagen y posts distintos, celdas distintas.
